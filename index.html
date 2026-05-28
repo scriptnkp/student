@@ -38,6 +38,8 @@
       <option value="1" selected>ครั้งที่ 1</option>
       <option value="2">ครั้งที่ 2</option>
       <option value="3">ครั้งที่ 3</option>
+      <option value="4">ครั้งที่ 4</option>
+      <option value="5">ครั้งที่ 5</option>
     </select>
   </div>
 
@@ -130,7 +132,7 @@
         <div class="form-card">
           <h3>ข้อมูลการเยี่ยม</h3>
           <div class="form-row three">
-            <div class="form-group"><label>ครั้งที่</label><input type="number" id="f-visit-no" value="1"></div>
+            <div class="form-group"><label>ครั้งที่</label><input type="number" id="f-visit-no" value="1" min="1" max="5"></div>
             <div class="form-group"><label>วันที่</label><input type="date" id="f-visit-date"></div>
             <div class="form-group"><label>เวลา</label><input type="time" id="f-visit-time"></div>
           </div>
@@ -163,7 +165,15 @@
             <div class="form-group"><label>ส่วนสูง (ซม.)</label><input type="number" id="f-height"></div>
             <div class="form-group"><label>หมู่โลหิต</label><input type="text" id="f-blood"></div>
           </div>
-          <div class="form-row full"><div class="form-group"><label>ที่อยู่ปัจจุบัน</label><textarea id="f-address" rows="2"></textarea></div></div>
+          <div class="form-row full">
+            <div class="form-group">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <label>ที่อยู่ปัจจุบัน</label>
+                <button type="button" onclick="startSpeechRecognition('f-address')" style="background:none; border:none; color:var(--blue); cursor:pointer; font-size:12px; display:flex; align-items:center; gap:2px;"><i class="ti ti-microphone"></i> พิมพ์ด้วยเสียง</button>
+              </div>
+              <textarea id="f-address" rows="2"></textarea>
+            </div>
+          </div>
         </div>
 
         <div class="form-card">
@@ -191,13 +201,69 @@
         <div class="form-card">
           <h3>ข้อมูลครัวเรือนและความเป็นอยู่</h3>
           <div class="form-row full"><div class="form-group"><label>จำนวนสมาชิกที่อาศัยในครัวเรือน ทั้งหมด (คน)</label><input type="number" id="f-house-members" value="1"></div></div>
-          <div class="form-row full"><div class="form-group"><label>สภาพบ้านและสิ่งแวดล้อมรอบบ้าน (ดี / พอใช้ / ปรับปรุง)</label><input type="text" id="f-house-cond" value="ดี"></div></div>
-          <div class="form-row full"><div class="form-group"><label>สภาพภายในบ้านและบรรยากาศ</label><input type="text" id="f-house-atmos" value="อบอุ่น"></div></div>
-          <div class="form-row full"><div class="form-group"><label>ความเอาใจใส่ในการเรียนขณะอยู่บ้าน</label><input type="text" id="f-care" value="เอาใจใส่ดี"></div></div>
-          <div class="form-row full"><div class="form-group"><label>ความสัมพันธ์กับสมาชิกในครอบครัว</label><input type="text" id="f-rel" value="ดี"></div></div>
-          <div class="form-row full"><div class="form-group"><label>งานอดิเรกในเวลาว่าง</label><input type="text" id="f-hobby"></div></div>
-          <div class="form-row full"><div class="form-group"><label>ความสามารถพิเศษ</label><input type="text" id="f-talent"></div></div>
-          <div class="form-row full"><div class="form-group"><label>ข้อเสนอแนะของผู้ปกครอง</label><textarea id="f-parent-suggest" rows="2"></textarea></div></div>
+          <div class="form-row full">
+            <div class="form-group">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <label>สภาพบ้านและสิ่งแวดล้อมรอบบ้าน (ดี / พอใช้ / ปรับปรุง)</label>
+                <button type="button" onclick="startSpeechRecognition('f-house-cond')" style="background:none; border:none; color:var(--blue); cursor:pointer; font-size:12px; display:flex; align-items:center; gap:2px;"><i class="ti ti-microphone"></i> พิมพ์ด้วยเสียง</button>
+              </div>
+              <input type="text" id="f-house-cond" value="ดี">
+            </div>
+          </div>
+          <div class="form-row full">
+            <div class="form-group">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <label>สภาพภายในบ้านและบรรยากาศ</label>
+                <button type="button" onclick="startSpeechRecognition('f-house-atmos')" style="background:none; border:none; color:var(--blue); cursor:pointer; font-size:12px; display:flex; align-items:center; gap:2px;"><i class="ti ti-microphone"></i> พิมพ์ด้วยเสียง</button>
+              </div>
+              <input type="text" id="f-house-atmos" value="อบอุ่น">
+            </div>
+          </div>
+          <div class="form-row full">
+            <div class="form-group">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <label>ความเอาใจใส่ในการเรียนขณะอยู่บ้าน</label>
+                <button type="button" onclick="startSpeechRecognition('f-care')" style="background:none; border:none; color:var(--blue); cursor:pointer; font-size:12px; display:flex; align-items:center; gap:2px;"><i class="ti ti-microphone"></i> พิมพ์ด้วยเสียง</button>
+              </div>
+              <input type="text" id="f-care" value="เอาใจใส่ดี">
+            </div>
+          </div>
+          <div class="form-row full">
+            <div class="form-group">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <label>ความสัมพันธ์กับสมาชิกในครอบครัว</label>
+                <button type="button" onclick="startSpeechRecognition('f-rel')" style="background:none; border:none; color:var(--blue); cursor:pointer; font-size:12px; display:flex; align-items:center; gap:2px;"><i class="ti ti-microphone"></i> พิมพ์ด้วยเสียง</button>
+              </div>
+              <input type="text" id="f-rel" value="ดี">
+            </div>
+          </div>
+          <div class="form-row full">
+            <div class="form-group">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <label>งานอดิเรกในเวลาว่าง</label>
+                <button type="button" onclick="startSpeechRecognition('f-hobby')" style="background:none; border:none; color:var(--blue); cursor:pointer; font-size:12px; display:flex; align-items:center; gap:2px;"><i class="ti ti-microphone"></i> พิมพ์ด้วยเสียง</button>
+              </div>
+              <input type="text" id="f-hobby">
+            </div>
+          </div>
+          <div class="form-row full">
+            <div class="form-group">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <label>ความสามารถพิเศษ</label>
+                <button type="button" onclick="startSpeechRecognition('f-talent')" style="background:none; border:none; color:var(--blue); cursor:pointer; font-size:12px; display:flex; align-items:center; gap:2px;"><i class="ti ti-microphone"></i> พิมพ์ด้วยเสียง</button>
+              </div>
+              <input type="text" id="f-talent">
+            </div>
+          </div>
+          <div class="form-row full">
+            <div class="form-group">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <label>ข้อเสนอแนะของผู้ปกครอง</label>
+                <button type="button" onclick="startSpeechRecognition('f-parent-suggest')" style="background:none; border:none; color:var(--blue); cursor:pointer; font-size:12px; display:flex; align-items:center; gap:2px;"><i class="ti ti-microphone"></i> พิมพ์ด้วยเสียง</button>
+              </div>
+              <textarea id="f-parent-suggest" rows="2"></textarea>
+            </div>
+          </div>
         </div>
 
         <div class="form-card">
@@ -253,7 +319,7 @@
           <h3>สภาพครอบครัวและที่อยู่อาศัย</h3>
           <div class="form-group"><label>สถานภาพบิดา-มารดา</label>
             <select id="s-parent-status">
-              <option value="อยู่ด้วยกันจดทะเบียน">อยู่ด้วยกันจดทะเบียน</option><option value="Toggle_Unregistered" selected>อยู่ด้วยกันไม่จดทะเบียน</option>
+              <option value="อยู่ด้วยกันจดทะเบียน">อยู่ด้วยกันจดทะเบียน</option><option value="อยู่ด้วยกันไม่จดทะเบียน" selected>อยู่ด้วยกันไม่จดทะเบียน</option>
               <option value="หย่าร้าง">หย่าร้าง</option><option value="แยกกันอยู่ไม่หย่า">แยกกันอยู่ไม่หย่า</option><option value="สมรสใหม่">สมรสใหม่</option>
             </select>
           </div>
