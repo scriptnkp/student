@@ -1,3 +1,7 @@
+// ประกาศตัวแปรควบคุมสากลเพื่อแก้ปัญหา ReferenceError เจาะจงสำหรับระบบ Multi-step
+let currentStep = 1;
+const totalSteps = 4;
+
 window.goToStep = function(n) {
   currentStep = n;
   ['1','2','3','4'].forEach(s => { document.getElementById('form-step-' + s).classList.toggle('hidden', s !== String(n)); });
@@ -11,7 +15,7 @@ window.goToStep = function(n) {
   document.getElementById('btn-next').textContent = n === 4 ? 'บันทึกข้อมูลเข้าสู่ระบบ' : 'ถัดไป';
   
   if (n === 4) { 
-    setTimeout(() => { window.initCanvas('sig-guardian'); window.initCanvas('sig-teacher1'); }, 1500); 
+    setTimeout(() => { window.initCanvas('sig-guardian'); window.initCanvas('sig-teacher1'); }, 300); 
   }
   document.querySelector('#page-form').scrollTop = 0;
 };
@@ -105,8 +109,37 @@ window.submitVisitData = () => {
   const payload = {
     action: "save_visit", studentId: currentStudentId || "ไม่ระบุ",
     teacherName: document.getElementById('f-teacher-1').value,
-    step1: { name: document.getElementById('f-name').value, class: document.getElementById('f-class').value, address: document.getElementById('f-address').value },
-    step2: { fJob: document.getElementById('f-f-job').value, fInc: document.getElementById('f-f-inc').value },
+    step1: { 
+      name: document.getElementById('f-name').value, class: document.getElementById('f-class').value, 
+      no: document.getElementById('f-no').value, idcard: document.getElementById('f-idcard').value,
+      gpa: document.getElementById('f-gpa').value, likeSub: document.getElementById('f-like-sub').value,
+      dislikeSub: document.getElementById('f-dislike-sub').value, dob: document.getElementById('f-dob').value,
+      race: document.getElementById('f-race').value, nation: document.getElementById('f-nation').value,
+      weight: document.getElementById('f-weight').value, height: document.getElementById('f-height').value,
+      blood: document.getElementById('f-blood').value, address: document.getElementById('f-address').value,
+      fatherName: document.getElementById('f-father-name').value, fatherId: document.getElementById('f-father-id').value,
+      fatherAge: document.getElementById('f-father-age').value, fatherEdu: document.getElementById('f-father-edu').value,
+      fatherPhone: document.getElementById('f-father-phone').value, motherName: document.getElementById('f-mother-name').value,
+      motherId: document.getElementById('f-mother-id').value, motherAge: document.getElementById('f-mother-age').value,
+      motherEdu: document.getElementById('f-mother-edu').value, motherPhone: document.getElementById('f-mother-phone').value,
+      guardName: document.getElementById('f-guard-name').value, guardRel: document.getElementById('f-guard-rel').value,
+      guardId: document.getElementById('f-guard-id').value, guardAge: document.getElementById('f-guard-age').value,
+      guardPhone: document.getElementById('f-guard-phone').value, broOlder: document.getElementById('f-bro-older').value,
+      sisOlder: document.getElementById('f-sis-older').value, broYoung: document.getElementById('f-bro-young').value,
+      sisYoung: document.getElementById('f-sis-young').value, childNo: document.getElementById('f-child-no').value,
+      sibStudy: document.getElementById('f-sib-study').value, sibWork: document.getElementById('f-sib-work').value
+    },
+    step2: { 
+      houseMembers: document.getElementById('f-house-members').value, houseCond: document.getElementById('f-house-cond').value,
+      houseAtmos: document.getElementById('f-house-atmos').value, care: document.getElementById('f-care').value,
+      rel: document.getElementById('f-rel').value, hobby: document.getElementById('f-hobby').value,
+      talent: document.getElementById('f-talent').value, parentSuggest: document.getElementById('f-parent-suggest').value,
+      fJob: document.getElementById('f-f-job').value, fPos: document.getElementById('f-f-pos').value, fInc: document.getElementById('f-f-inc').value,
+      mJob: document.getElementById('f-m-job').value, mPos: document.getElementById('f-m-pos').value, mInc: document.getElementById('f-m-inc').value,
+      spName: document.getElementById('f-sp-name').value, spRel: document.getElementById('f-sp-rel').value, spJob: document.getElementById('f-sp-job').value,
+      spPos: document.getElementById('f-sp-pos').value, spInc: document.getElementById('f-sp-inc').value,
+      transport: document.getElementById('f-trans-cost').value, safety: document.getElementById('s-parent-status').value
+    },
     lat: document.getElementById('f-lat').value, lng: document.getElementById('f-lng').value, signature: "Saved"
   };
   fetch(WEB_APP_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) })
@@ -211,3 +244,9 @@ window.prepareAndPrintPDF = () => {
 
   window.print();
 };
+
+window.toggleAddStudentForm = toggleAddStudentForm;
+window.submitNewStudent = submitNewStudent;
+window.openVisitForm = openVisitForm;
+window.clearSig = clearSig;
+window.getGPS = getGPS;
