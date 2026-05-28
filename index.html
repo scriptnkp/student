@@ -32,11 +32,20 @@
     <button class="role-btn" onclick="setRole('teacher')">ครูที่ปรึกษา (ม.1/9)</button>
   </div>
 
+  <div class="role-bar" style="background: #11442e; border-top: 1px solid rgba(255,255,255,0.1);">
+    <span class="role-label"><i class="ti ti-history"></i> รอบการเยี่ยมบ้านปัจจุบัน:</span>
+    <select id="select-visit-round" onchange="changeVisitRound(this.value)" style="padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.3); background: var(--primary); color: white; font-family: inherit; font-size: 12px; outline: none; cursor: pointer;">
+      <option value="1" selected>ครั้งที่ 1</option>
+      <option value="2">ครั้งที่ 2</option>
+      <option value="3">ครั้งที่ 3</option>
+    </select>
+  </div>
+
   <div class="main" id="main">
     
     <div class="page active" id="page-dashboard">
       <div id="admin-dash">
-        <div style="padding: 0 20px 0;">
+        <div style="padding: 0 4px 0;">
           <p class="section-title">📊 ภาพรวมการเยี่ยมบ้าน ปีการศึกษา <span id="current-academic-year"></span></p>
           <p class="section-sub">ดึงข้อมูลล่าสุดจากฐานข้อมูลคลาวด์</p>
         </div>
@@ -54,7 +63,7 @@
         <div class="class-grid" id="class-grid"></div>
       </div>
 
-      <div id="teacher-dash" class="hidden" style="padding: 20px;">
+      <div id="teacher-dash" class="hidden">
         <div style="background: linear-gradient(135deg, #1a6b4a 0%, #2d8a62 100%); border-radius: 12px; padding: 16px; color: white; margin-bottom: 16px;">
           <h2 style="font-size: 17px; font-weight: 500; margin-bottom: 4px;">ครูที่ปรึกษา ม.1/9</h2>
           <div class="teacher-stats">
@@ -103,210 +112,207 @@
     </div>
 
     <div class="page" id="page-form">
-      <div style="padding: 0 20px;">
-        <div class="wizard-header">
-          <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px">
-            <div style="font-size:13px; color:var(--gray600)">กำลังบันทึก:</div>
-            <div style="font-size:14px; font-weight:500; color:var(--primary)" id="form-header-name">-</div>
-          </div>
-          <div class="step-indicator">
-            <div class="step-dot active" id="step-dot-1"><div class="step-circle">1</div><div class="step-label">ข้อมูลพื้นฐาน</div></div>
-            <div class="step-dot" id="step-dot-2"><div class="step-circle">2</div><div class="step-label">ครัวเรือน & เศรษฐกิจ</div></div>
-            <div class="step-dot" id="step-dot-3"><div class="step-circle">3</div><div class="step-label">การเดินทาง & พิกัด</div></div>
-            <div class="step-dot" id="step-dot-4"><div class="step-circle">4</div><div class="step-label">ลายเซ็น</div></div>
-          </div>
-          <div style="font-size:11px; text-align:center; color: var(--gray600); margin-top:6px;">ขั้นตอนที่ <span id="step-num">1</span> จาก 4</div>
+      <div class="wizard-header">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px">
+          <div style="font-size:13px; color:var(--gray600)">กำลังบันทึก:</div>
+          <div style="font-size:14px; font-weight:500; color:var(--primary)" id="form-header-name">-</div>
         </div>
+        <div class="step-indicator">
+          <div class="step-dot active" id="step-dot-1"><div class="step-circle">1</div><div class="step-label">ข้อมูลพื้นฐาน</div></div>
+          <div class="step-dot" id="step-dot-2"><div class="step-circle">2</div><div class="step-label">ครัวเรือน & เศรษฐกิจ</div></div>
+          <div class="step-dot" id="step-dot-3"><div class="step-circle">3</div><div class="step-label">การเดินทาง & พิกัด</div></div>
+          <div class="step-dot" id="step-dot-4"><div class="step-circle">4</div><div class="step-label">ลายเซ็น</div></div>
+        </div>
+        <div style="font-size:11px; text-align:center; color: var(--gray600); margin-top:6px;">ขั้นตอนที่ <span id="step-num">1</span> จาก 4</div>
+      </div>
 
-        <div id="form-step-1">
-          <div class="form-card">
-            <h3>ข้อมูลการเยี่ยม</h3>
-            <div class="form-row three">
-              <div class="form-group"><label>ครั้งที่</label><input type="number" id="f-visit-no" value="1"></div>
-              <div class="form-group"><label>วันที่</label><input type="date" id="f-visit-date"></div>
-              <div class="form-group"><label>เวลา</label><input type="time" id="f-visit-time"></div>
-            </div>
-            <div class="form-row">
-              <div class="form-group"><label>ชื่อครูที่เยี่ยมบ้านคนที่ 1</label><input type="text" id="f-teacher-1" value="นางสาวอมรรัตน์ เจริญสุข"></div>
-              <div class="form-group"><label>ชื่อครูที่เยี่ยมบ้านคนที่ 2</label><input type="text" id="f-teacher-2"></div>
-            </div>
+      <div id="form-step-1">
+        <div class="form-card">
+          <h3>ข้อมูลการเยี่ยม</h3>
+          <div class="form-row three">
+            <div class="form-group"><label>ครั้งที่</label><input type="number" id="f-visit-no" value="1"></div>
+            <div class="form-group"><label>วันที่</label><input type="date" id="f-visit-date"></div>
+            <div class="form-group"><label>เวลา</label><input type="time" id="f-visit-time"></div>
           </div>
-
-          <div class="form-card">
-            <h3>ข้อมูลพื้นฐานนักเรียน (ตามฟอร์ม 8333)</h3>
-            <div class="form-row full"><div class="form-group"><label>ชื่อ-สกุลนักเรียน</label><input type="text" id="f-name"></div></div>
-            <div class="form-row three">
-              <div class="form-group"><label>ชั้น</label><input type="text" id="f-class"></div>
-              <div class="form-group"><label>เลขที่</label><input type="text" id="f-no"></div>
-              <div class="form-group"><label>เลขประจำตัวประชาชน</label><input type="text" id="f-idcard"></div>
-            </div>
-            <div class="form-row three">
-              <div class="form-group"><label>ผลการเรียน (GPA)</label><input type="number" step="0.01" id="f-gpa"></div>
-              <div class="form-group"><label>วิชาที่ชอบ</label><input type="text" id="f-like-sub"></div>
-              <div class="form-group"><label>วิชาที่ไม่ชอบ</label><input type="text" id="f-dislike-sub"></div>
-            </div>
-            <div class="form-row three">
-              <div class="form-group"><label>วัน/เดือน/ปีเกิด</label><input type="date" id="f-dob"></div>
-              <div class="form-group"><label>เชื้อชาติ</label><input type="text" id="f-race" value="ไทย"></div>
-              <div class="form-group"><label>สัญชาติ</label><input type="text" id="f-nation" value="ไทย"></div>
-            </div>
-            <div class="form-row three">
-              <div class="form-group"><label>น้ำหนัก (กก.)</label><input type="number" id="f-weight"></div>
-              <div class="form-group"><label>ส่วนสูง (ซม.)</label><input type="number" id="f-height"></div>
-              <div class="form-group"><label>หมู่โลหิต</label><input type="text" id="f-blood"></div>
-            </div>
-            <div class="form-row full"><div class="form-group"><label>ที่อยู่ปัจจุบัน</label><textarea id="f-address" rows="2"></textarea></div></div>
-          </div>
-
-          <div class="form-card">
-            <h3>ข้อมูลครอบครัว</h3>
-            <p style="font-weight: 500; font-size:13px; color:var(--primary); margin-bottom:4px;">บิดา</p>
-            <div class="form-row"><div class="form-group"><label>ชื่อ-สกุล บิดา</label><input type="text" id="f-father-name"></div><div class="form-group"><label>เลขประชช. บิดา</label><input type="text" id="f-father-id"></div></div>
-            <div class="form-row three"><div class="form-group"><label>อายุ</label><input type="number" id="f-father-age"></div><div class="form-group"><label>การศึกษา</label><input type="text" id="f-father-edu"></div><div class="form-group"><label>โทรศัพท์</label><input type="text" id="f-father-phone"></div></div>
-            
-            <p style="font-weight: 500; font-size:13px; color:var(--primary); margin-top:8px; margin-bottom:4px;">มารดา</p>
-            <div class="form-row"><div class="form-group"><label>ชื่อ-สกุล มารดา</label><input type="text" id="f-mother-name"></div><div class="form-group"><label>เลขประชช. มารดา</label><input type="text" id="f-mother-id"></div></div>
-            <div class="form-row three"><div class="form-group"><label>อายุ</label><input type="number" id="f-mother-age"></div><div class="form-group"><label>การศึกษา</label><input type="text" id="f-mother-edu"></div><div class="form-group"><label>โทรศัพท์</label><input type="text" id="f-mother-phone"></div></div>
-
-            <p style="font-weight: 500; font-size:13px; color:var(--primary); margin-top:8px; margin-bottom:4px;">ผู้ปกครอง (กรณีไม่ใช่บิดามารดา)</p>
-            <div class="form-row"><div class="form-group"><label>ชื่อ-สกุล ผู้ปกครอง</label><input type="text" id="f-guard-name"></div><div class="form-group"><label>เกี่ยวข้องเป็น</label><input type="text" id="f-guard-rel"></div></div>
-            <div class="form-row three"><div class="form-group"><label>เลข ปชช.</label><input type="text" id="f-guard-id"></div><div class="form-group"><label>อายุ</label><input type="number" id="f-guard-age"></div><div class="form-group"><label>โทรศัพท์</label><input type="text" id="f-guard-phone"></div></div>
-
-            <p style="font-weight: 500; font-size:13px; color:var(--primary); margin-top:8px; margin-bottom:4px;">จำนวนพี่น้อง</p>
-            <div class="form-row"><div class="form-group"><label>พี่ชาย (คน)</label><input type="number" id="f-bro-older" value="0"></div><div class="form-group"><label>พี่สาว (คน)</label><input type="number" id="f-sis-older" value="0"></div></div>
-            <div class="form-row"><div class="form-group"><label>น้องชาย (คน)</label><input type="number" id="f-bro-young" value="0"></div><div class="form-group"><label>น้องสาว (คน)</label><input type="number" id="f-sis-young" value="0"></div></div>
-            <div class="form-row three"><div class="form-group"><label>นักเรียนเป็นบุตรคนที่</label><input type="number" id="f-child-no" value="1"></div><div class="form-group"><label>กำลังศึกษา (คน)</label><input type="number" id="f-sib-study" value="1"></div><div class="form-group"><label>ทำงานแล้ว (คน)</label><input type="number" id="f-sib-work" value="0"></div></div>
+          <div class="form-row">
+            <div class="form-group"><label>ชื่อครูที่เยี่ยมบ้านคนที่ 1</label><input type="text" id="f-teacher-1" value="นางสาวอมรรัตน์ เจริญสุข"></div>
+            <div class="form-group"><label>ชื่อครูที่เยี่ยมบ้านคนที่ 2</label><input type="text" id="f-teacher-2"></div>
           </div>
         </div>
 
-        <div id="form-step-2" class="hidden">
-          <div class="form-card">
-            <h3>ข้อมูลครัวเรือนและความเป็นอยู่</h3>
-            <div class="form-row full"><div class="form-group"><label>จำนวนสมาชิกที่อาศัยในครัวเรือน ทั้งหมด (คน)</label><input type="number" id="f-house-members" value="1"></div></div>
-            <div class="form-row full"><div class="form-group"><label>สภาพบ้านและสิ่งแวดล้อมรอบบ้าน (ดี / พอใช้ / ปรับปรุง)</label><input type="text" id="f-house-cond" value="ดี"></div></div>
-            <div class="form-row full"><div class="form-group"><label>สภาพภายในบ้านและบรรยากาศ</label><input type="text" id="f-house-atmos" value="อบอุ่น"></div></div>
-            <div class="form-row full"><div class="form-group"><label>ความเอาใจใส่ในการเรียนขณะอยู่บ้าน</label><input type="text" id="f-care" value="เอาใจใส่ดี"></div></div>
-            <div class="form-row full"><div class="form-group"><label>ความสัมพันธ์กับสมาชิกในครอบครัว</label><input type="text" id="f-rel" value="ดี"></div></div>
-            <div class="form-row full"><div class="form-group"><label>งานอดิเรกในเวลาว่าง</label><input type="text" id="f-hobby"></div></div>
-            <div class="form-row full"><div class="form-group"><label>ความสามารถพิเศษ</label><input type="text" id="f-talent"></div></div>
-            <div class="form-row full"><div class="form-group"><label>ข้อเสนอแนะของผู้ปกครอง</label><textarea id="f-parent-suggest" rows="2"></textarea></div></div>
+        <div class="form-card">
+          <h3>ข้อมูลพื้นฐานนักเรียน (ตามฟอร์ม 8333)</h3>
+          <div class="form-row full"><div class="form-group"><label>ชื่อ-สกุลนักเรียน</label><input type="text" id="f-name"></div></div>
+          <div class="form-row three">
+            <div class="form-group"><label>ชั้น</label><input type="text" id="f-class"></div>
+            <div class="form-group"><label>เลขที่</label><input type="text" id="f-no"></div>
+            <div class="form-group"><label>เลขประจำตัวประชาชน</label><input type="text" id="f-idcard"></div>
           </div>
-
-          <div class="form-card">
-            <h3>ข้อมูลด้านเศรษฐกิจ (ตามฟอร์ม 8344)</h3>
-            <div class="form-row three"><div class="form-group"><label>อาชีพบิดา</label><input type="text" id="f-f-job"></div><div class="form-group"><label>ตำแหน่ง</label><input type="text" id="f-f-pos"></div><div class="form-group"><label>รายได้/เดือน</label><input type="number" id="f-f-inc" value="0"></div></div>
-            <div class="form-row three"><div class="form-group"><label>อาชีพมารดา</label><input type="text" id="f-m-job"></div><div class="form-group"><label>ตำแหน่ง</label><input type="text" id="f-m-pos"></div><div class="form-group"><label>รายได้/เดือน</label><input type="number" id="f-m-inc" value="0"></div></div>
-            
-            <p style="font-weight: 500; font-size:12px; color:var(--primary); margin-top:8px;">ผู้ดูแลรับผิดชอบค่าใช้จ่ายในการศึกษา</p>
-            <div class="form-row"><div class="form-group"><label>ชื่อ-สกุล</label><input type="text" id="f-sp-name"></div><div class="form-group"><label>เกี่ยวข้องเป็น</label><input type="text" id="f-sp-rel"></div></div>
-            <div class="form-row three"><div class="form-group"><label>อาชีพ</label><input type="text" id="f-sp-job"></div><div class="form-group"><label>ตำแหน่ง</label><input type="text" id="f-sp-pos"></div><div class="form-group"><label>รายได้/เดือน</label><input type="number" id="f-sp-inc" value="0"></div></div>
-            
-            <p style="font-weight: 500; font-size:12px; color:var(--gray900); margin-top:8px;">ความช่วยเหลือที่ต้องการจากทางโรงเรียน</p>
-            <div class="check-row">
-              <label class="check-item"><input type="checkbox" id="chk-help-1"> อุปกรณ์การเรียน</label>
-              <label class="check-item"><input type="checkbox" id="chk-help-2"> อาหารกลางวัน</label>
-              <label class="check-item"><input type="checkbox" id="chk-help-3"> เครื่องแบบนักเรียน</label>
-              <label class="check-item"><input type="checkbox" id="chk-help-4"> ทุนการศึกษา</label>
-            </div>
+          <div class="form-row three">
+            <div class="form-group"><label>ผลการเรียน (GPA)</label><input type="number" step="0.01" id="f-gpa"></div>
+            <div class="form-group"><label>วิชาที่ชอบ</label><input type="text" id="f-like-sub"></div>
+            <div class="form-group"><label>วิชาที่ไม่ชอบ</label><input type="text" id="f-dislike-sub"></div>
           </div>
+          <div class="form-row three">
+            <div class="form-group"><label>วัน/เดือน/ปีเกิด</label><input type="date" id="f-dob"></div>
+            <div class="form-group"><label>เชื้อชาติ</label><input type="text" id="f-race" value="ไทย"></div>
+            <div class="form-group"><label>สัญชาติ</label><input type="text" id="f-nation" value="ไทย"></div>
+          </div>
+          <div class="form-row three">
+            <div class="form-group"><label>น้ำหนัก (กก.)</label><input type="number" id="f-weight"></div>
+            <div class="form-group"><label>ส่วนสูง (ซม.)</label><input type="number" id="f-height"></div>
+            <div class="form-group"><label>หมู่โลหิต</label><input type="text" id="f-blood"></div>
+          </div>
+          <div class="form-row full"><div class="form-group"><label>ที่อยู่ปัจจุบัน</label><textarea id="f-address" rows="2"></textarea></div></div>
         </div>
 
-        <div id="form-step-3" class="hidden">
-          <div class="form-card">
-            <h3>การเดินทางและชีวิตประจำวัน</h3>
-            <p style="font-size:12px; font-weight:500; margin-bottom:4px;">วิธีการเดินทางมาโรงเรียน</p>
-            <div class="check-row" style="margin-bottom:10px;">
-              <label class="check-item"><input type="radio" name="r_trans" value="รถยนต์ส่วนบุคคล" checked> รถยนต์ส่วนบุคคล</label>
-              <label class="check-item"><input type="radio" name="r_trans" value="รถโดยสารประจำทาง"> รถโดยสารประจำทาง</label>
-              <label class="check-item"><input type="radio" name="r_trans" value="รถจักรยานยนต์"> รถจักรยานยนต์</label>
-            </div>
-            <div class="form-row three">
-              <div class="form-group"><label>ค่าใช้จ่าย/เดือน (บาท)</label><input type="number" id="f-trans-cost" value="0"></div>
-              <div class="form-group"><label>ระยะเวลา (นาที)</label><input type="number" id="f-trans-time" value="0"></div>
-              <div class="form-group"><label>ระยะทาง (กม.)</label><input type="number" id="f-trans-dist" value="0"></div>
-          </div>
-            <div class="form-row">
-              <div class="form-group"><label>ได้รับเงินวันละ (บาท)</label><input type="number" id="f-money-day" value="0"></div>
-              <div class="form-group"><label>เงินที่ได้รับ</label>
-                <div class="check-row"><label class="check-item"><input type="radio" name="r_money_en" value="เพียงพอ" checked> เพียงพอ</label><label class="check-item"><input type="radio" name="r_money_en" value="ไม่เพียงพอ"> ไม่เพียงพอ</label></div>
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group"><label>อาหารเช้า</label>
-                <div class="check-row"><label class="check-item"><input type="radio" name="r_bf" value="รับประทาน" checked> รับประทาน</label><label class="check-item"><input type="radio" name="r_bf" value="ไม่รับประทาน"> ไม่รับประทาน</label></div>
-              </div>
-              <div class="form-group"><label>อาหารกลางวัน</label>
-                <div class="check-row"><label class="check-item"><input type="radio" name="r_lunch" value="ซื้อรับประทาน" checked> ซื้อรับประทาน</label><label class="check-item"><input type="radio" name="r_lunch" value="นำมารับประทาน"> นำมาเอง</label></div>
-              </div>
-            </div>
-          </div>
+        <div class="form-card">
+          <h3>ข้อมูลครอบครัว</h3>
+          <p style="font-weight: 500; font-size:13px; color:var(--primary); margin-bottom:4px;">บิดา</p>
+          <div class="form-row"><div class="form-group"><label>ชื่อ-สกุล บิดา</label><input type="text" id="f-father-name"></div><div class="form-group"><label>เลขประชช. บิดา</label><input type="text" id="f-father-id"></div></div>
+          <div class="form-row three"><div class="form-group"><label>อายุ</label><input type="number" id="f-father-age"></div><div class="form-group"><label>การศึกษา</label><input type="text" id="f-father-edu"></div><div class="form-group"><label>โทรศัพท์</label><input type="text" id="f-father-phone"></div></div>
+          
+          <p style="font-weight: 500; font-size:13px; color:var(--primary); margin-top:8px; margin-bottom:4px;">มารดา</p>
+          <div class="form-row"><div class="form-group"><label>ชื่อ-สกุล มารดา</label><input type="text" id="f-mother-name"></div><div class="form-group"><label>เลขประชช. มารดา</label><input type="text" id="f-mother-id"></div></div>
+          <div class="form-row three"><div class="form-group"><label>อายุ</label><input type="number" id="f-mother-age"></div><div class="form-group"><label>การศึกษา</label><input type="text" id="f-mother-edu"></div><div class="form-group"><label>โทรศัพท์</label><input type="text" id="f-mother-phone"></div></div>
 
-          <div class="form-card">
-            <h3>สภาพครอบครัวและที่อยู่อาศัย</h3>
-            <div class="form-group"><label>สถานภาพบิดา-มารดา</label>
-              <select id="s-parent-status">
-                <option value="อยู่ด้วยกันจดทะเบียน">อยู่ด้วยกันจดทะเบียน</option><option value="อยู่ด้วยกันไม่จดทะเบียน" selected>อยู่ด้วยกันไม่จดทะเบียน</option>
-                <option value="หย่าร้าง">หย่าร้าง</option><option value="แยกกันอยู่ไม่หย่า">แยกกันอยู่ไม่หย่า</option><option value="สมรสใหม่">สมรสใหม่</option>
-              </select>
-          </div>
-            <div class="form-group" style="margin-top:10px;"><label>ลักษณะบ้านพัก</label>
-              <div class="check-row"><label class="check-item"><input type="radio" name="r_house_type" value="ตึก" checked> ตึก</label><label class="check-item"><input type="radio" name="r_house_type" value="ไม้"> ไม้</label><label class="check-item"><input type="radio" name="r_house_type" value="ครึ่งตึกครึ่งไม้"> ครึ่งตึกครึ่งไม้</label></div>
-            </div>
-            <div class="form-group" style="margin-top:10px;"><label>บ้านที่อาศัยอยู่ขณะนี้</label>
-              <div class="check-row"><label class="check-item"><input type="radio" name="r_space" value="คับแคบมาก"> คับแคบมาก</label><label class="check-item"><input type="radio" name="r_space" value="พอดี" checked> พอดี</label><label class="check-item"><input type="radio" name="r_space" value="กว้างขวาง"> กว้างขวาง</label></div>
-            </div>
-            <div class="form-group" style="margin-top:10px;"><label>ห้องส่วนตัวในบ้าน</label>
-              <div class="check-row"><label class="check-item"><input type="radio" name="r_private_rm" value="มี" checked> มี</label><label class="check-item"><input type="radio" name="r_private_rm" value="ไม่มี"> ไม่มี</label></div>
-            </div>
-            <div class="form-group" style="margin-top:10px;"><label>สภาพแวดล้อมบ้าน</label>
-              <div class="check-row"><label class="check-item"><input type="radio" name="r_safe" value="ปลอดภัย" checked> ปลอดภัย</label><label class="check-item"><input type="radio" name="r_safe" value="ไม่ปลอดภัย"> ไม่ปลอดภัย</label><label class="check-item"><input type="radio" name="r_safe" value="มีจุดเสี่ยง"> มีจุดเสี่ยง</label></div>
-            </div>
-          </div>
+          <p style="font-weight: 500; font-size:13px; color:var(--primary); margin-top:8px; margin-bottom:4px;">ผู้ปกครอง (กรณีไม่ใช่บิดามารดา)</p>
+          <div class="form-row"><div class="form-group"><label>ชื่อ-สกุล ผู้ปกครอง</label><input type="text" id="f-guard-name"></div><div class="form-group"><label>เกี่ยวข้องเป็น</label><input type="text" id="f-guard-rel"></div></div>
+          <div class="form-row three"><div class="form-group"><label>เลข ปชช.</label><input type="text" id="f-guard-id"></div><div class="form-group"><label>อายุ</label><input type="number" id="f-guard-age"></div><div class="form-group"><label>โทรศัพท์</label><input type="text" id="f-guard-phone"></div></div>
 
-          <div class="form-card">
-            <h3><i class="ti ti-map-pin"></i> พิกัด GPS บ้านนักเรียน</h3>
-            <button type="button" class="gps-btn" onclick="getGPS()"><i class="ti ti-current-location"></i> ดึงพิกัดปัจจุบัน (GPS)</button>
-            <div class="gps-result" id="gps-result" style="display:none"><span id="gps-text">กำลังดึงพิกัด...</span></div>
-            <div class="form-row" style="margin-top:12px">
-              <div class="form-group"><label>Latitude</label><input type="text" id="f-lat" readonly></div>
-              <div class="form-group"><label>Longitude</label><input type="text" id="f-lng" readonly></div>
+          <p style="font-weight: 500; font-size:13px; color:var(--primary); margin-top:8px; margin-bottom:4px;">จำนวนพี่น้อง</p>
+          <div class="form-row"><div class="form-group"><label>พี่ชาย (คน)</label><input type="number" id="f-bro-older" value="0"></div><div class="form-group"><label>พี่สาว (คน)</label><input type="number" id="f-sis-older" value="0"></div></div>
+          <div class="form-row"><div class="form-group"><label>น้องชาย (คน)</label><input type="number" id="f-bro-young" value="0"></div><div class="form-group"><label>น้องสาว (คน)</label><input type="number" id="f-sis-young" value="0"></div></div>
+          <div class="form-row three"><div class="form-group"><label>นักเรียนเป็นบุตรคนที่</label><input type="number" id="f-child-no" value="1"></div><div class="form-group"><label>กำลังศึกษา (คน)</label><input type="number" id="f-sib-study" value="1"></div><div class="form-group"><label>ทำงานแล้ว (คน)</label><input type="number" id="f-sib-work" value="0"></div></div>
+        </div>
+      </div>
+
+      <div id="form-step-2" class="hidden">
+        <div class="form-card">
+          <h3>ข้อมูลครัวเรือนและความเป็นอยู่</h3>
+          <div class="form-row full"><div class="form-group"><label>จำนวนสมาชิกที่อาศัยในครัวเรือน ทั้งหมด (คน)</label><input type="number" id="f-house-members" value="1"></div></div>
+          <div class="form-row full"><div class="form-group"><label>สภาพบ้านและสิ่งแวดล้อมรอบบ้าน (ดี / พอใช้ / ปรับปรุง)</label><input type="text" id="f-house-cond" value="ดี"></div></div>
+          <div class="form-row full"><div class="form-group"><label>สภาพภายในบ้านและบรรยากาศ</label><input type="text" id="f-house-atmos" value="อบอุ่น"></div></div>
+          <div class="form-row full"><div class="form-group"><label>ความเอาใจใส่ในการเรียนขณะอยู่บ้าน</label><input type="text" id="f-care" value="เอาใจใส่ดี"></div></div>
+          <div class="form-row full"><div class="form-group"><label>ความสัมพันธ์กับสมาชิกในครอบครัว</label><input type="text" id="f-rel" value="ดี"></div></div>
+          <div class="form-row full"><div class="form-group"><label>งานอดิเรกในเวลาว่าง</label><input type="text" id="f-hobby"></div></div>
+          <div class="form-row full"><div class="form-group"><label>ความสามารถพิเศษ</label><input type="text" id="f-talent"></div></div>
+          <div class="form-row full"><div class="form-group"><label>ข้อเสนอแนะของผู้ปกครอง</label><textarea id="f-parent-suggest" rows="2"></textarea></div></div>
+        </div>
+
+        <div class="form-card">
+          <h3>ข้อมูลด้านเศรษฐกิจ (ตามฟอร์ม 8344)</h3>
+          <div class="form-row three"><div class="form-group"><label>อาชีพบิดา</label><input type="text" id="f-f-job"></div><div class="form-group"><label>ตำแหน่ง</label><input type="text" id="f-f-pos"></div><div class="form-group"><label>รายได้/เดือน</label><input type="number" id="f-f-inc" value="0"></div></div>
+          <div class="form-row three"><div class="form-group"><label>อาชีพมารดา</label><input type="text" id="f-m-job"></div><div class="form-group"><label>ตำแหน่ง</label><input type="text" id="f-m-pos"></div><div class="form-group"><label>รายได้/เดือน</label><input type="number" id="f-m-inc" value="0"></div></div>
+          
+          <p style="font-weight: 500; font-size:12px; color:var(--primary); margin-top:8px;">ผู้ดูแลรับผิดชอบค่าใช้จ่ายในการศึกษา</p>
+          <div class="form-row"><div class="form-group"><label>ชื่อ-สกุล</label><input type="text" id="f-sp-name"></div><div class="form-group"><label>เกี่ยวข้องเป็น</label><input type="text" id="f-sp-rel"></div></div>
+          <div class="form-row three"><div class="form-group"><label>อาชีพ</label><input type="text" id="f-sp-job"></div><div class="form-group"><label>ตำแหน่ง</label><input type="text" id="f-sp-pos"></div><div class="form-group"><label>รายได้/เดือน</label><input type="number" id="f-sp-inc" value="0"></div></div>
+          
+          <p style="font-weight: 500; font-size:12px; color:var(--gray900); margin-top:8px;">ความช่วยเหลือที่ต้องการจากทางโรงเรียน</p>
+          <div class="check-row">
+            <label class="check-item"><input type="checkbox" id="chk-help-1"> อุปกรณ์การเรียน</label>
+            <label class="check-item"><input type="checkbox" id="chk-help-2"> อาหารกลางวัน</label>
+            <label class="check-item"><input type="checkbox" id="chk-help-3"> เครื่องแบบนักเรียน</label>
+            <label class="check-item"><input type="checkbox" id="chk-help-4"> ทุนการศึกษา</label>
+          </div>
+        </div>
+      </div>
+
+      <div id="form-step-3" class="hidden">
+        <div class="form-card">
+          <h3>การเดินทางและชีวิตประจำวัน</h3>
+          <p style="font-size:12px; font-weight:500; margin-bottom:4px;">วิธีการเดินทางมาโรงเรียน</p>
+          <div class="check-row" style="margin-bottom:10px;">
+            <label class="check-item"><input type="radio" name="r_trans" value="รถยนต์ส่วนบุคคล" checked> รถยนต์ส่วนบุคคล</label>
+            <label class="check-item"><input type="radio" name="r_trans" value="รถโดยสารประจำทาง"> รถโดยสารประจำทาง</label>
+            <label class="check-item"><input type="radio" name="r_trans" value="รถจักรยานยนต์"> รถจักรยานยนต์</label>
+          </div>
+          <div class="form-row three">
+            <div class="form-group"><label>ค่าใช้จ่าย/เดือน (บาท)</label><input type="number" id="f-trans-cost" value="0"></div>
+            <div class="form-group"><label>ระยะเวลา (นาที)</label><input type="number" id="f-trans-time" value="0"></div>
+            <div class="form-group"><label>ระยะทาง (กม.)</label><input type="number" id="f-trans-dist" value="0"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>ได้รับเงินวันละ (บาท)</label><input type="number" id="f-money-day" value="0"></div>
+            <div class="form-group"><label>เงินที่ได้รับ</label>
+              <div class="check-row"><label class="check-item"><input type="radio" name="r_money_en" value="เพียงพอ" checked> เพียงพอ</label><label class="check-item"><input type="radio" name="r_money_en" value="ไม่เพียงพอ"> ไม่เพียงพอ</label></div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>อาหารเช้า</label>
+              <div class="check-row"><label class="check-item"><input type="radio" name="r_bf" value="รับประทาน" checked> รับประทาน</label><label class="check-item"><input type="radio" name="r_bf" value="ไม่รับประทาน"> ไม่รับประทาน</label></div>
+            </div>
+            <div class="form-group"><label>อาหารกลางวัน</label>
+              <div class="check-row"><label class="check-item"><input type="radio" name="r_lunch" value="ซื้อรับประทาน" checked> ซื้อรับประทาน</label><label class="check-item"><input type="radio" name="r_lunch" value="นำมารับประทาน"> นำมาเอง</label></div>
             </div>
           </div>
         </div>
 
-        <div id="form-step-4" class="hidden">
-          <div class="form-card">
-            <h3><i class="ti ti-signature"></i> ลายเซ็นผู้ปกครอง</h3>
-            <div class="sig-wrap">
-              <canvas class="sig-canvas" id="sig-guardian"></canvas>
-              <button type="button" class="sig-clear" onclick="clearSig('sig-guardian')">ล้าง</button>
-              <div class="sig-label-overlay">ลงลายมือชื่อผู้ปกครอง</div>
-            </div>
-            <div class="form-group" style="margin-top: 12px;">
-              <label style="color: var(--primary);">ชื่อ-สกุล ผู้ปกครอง (ตัวบรรจงระบุในวงเล็บรายงาน)</label>
-              <input type="text" id="f-sig-name-guard-input" placeholder="เช่น นายสมชาย ใจดี">
-            </div>
+        <div class="form-card">
+          <h3>สภาพครอบครัวและที่อยู่อาศัย</h3>
+          <div class="form-group"><label>สถานภาพบิดา-มารดา</label>
+            <select id="s-parent-status">
+              <option value="อยู่ด้วยกันจดทะเบียน">อยู่ด้วยกันจดทะเบียน</option><option value="Toggle_Unregistered" selected>อยู่ด้วยกันไม่จดทะเบียน</option>
+              <option value="หย่าร้าง">หย่าร้าง</option><option value="แยกกันอยู่ไม่หย่า">แยกกันอยู่ไม่หย่า</option><option value="สมรสใหม่">สมรสใหม่</option>
+            </select>
           </div>
-
-          <div class="form-card">
-            <h3><i class="ti ti-signature"></i> ลายเซ็นครูที่ปรึกษา</h3>
-            <div class="sig-wrap">
-              <canvas class="sig-canvas" id="sig-teacher1"></canvas>
-              <button type="button" class="sig-clear" onclick="clearSig('sig-teacher1')">ล้าง</button>
-              <div class="sig-label-overlay">ลงลายมือชื่อครูที่ปรึกษาคนที่ 1</div>
-            </div>
-            <div class="form-group" style="margin-top: 12px;">
-              <label style="color: var(--primary);">ชื่อ-สกุล ครูที่ปรึกษา (ตัวบรรจงระบุในวงเล็บรายงาน)</label>
-              <input type="text" id="f-sig-name-teacher-input" placeholder="เช่น นางสาวอมรรัตน์ เจริญสุข">
-            </div>
+          <div class="form-group" style="margin-top:10px;"><label>ลักษณะบ้านพัก</label>
+            <div class="check-row"><label class="check-item"><input type="radio" name="r_house_type" value="ตึก" checked> ตึก</label><label class="check-item"><input type="radio" name="r_house_type" value="ไม้"> ไม้</label><label class="check-item"><input type="radio" name="r_house_type" value="ครึ่งตึกครึ่งไม้"> ครึ่งตึกครึ่งไม้</label></div>
           </div>
-
-          <div class="form-card" style="text-align: center;">
-            <h3>พิมพ์แบบฟอร์มรายงาน</h3>
-            <button type="button" class="btn btn-pdf" onclick="prepareAndPrintPDF()" style="width: 100%; justify-content: center;">พิมพ์รายงาน PDF</button>
+          <div class="form-group" style="margin-top:10px;"><label>บ้านที่อาศัยอยู่ขณะนี้</label>
+            <div class="check-row"><label class="check-item"><input type="radio" name="r_space" value="คับแคบมาก"> คับแคบมาก</label><label class="check-item"><input type="radio" name="r_space" value="พอดี" checked> พอดี</label><label class="check-item"><input type="radio" name="r_space" value="กว้างขวาง"> กว้างขวาง</label></div>
+          </div>
+          <div class="form-group" style="margin-top:10px;"><label>ห้องส่วนตัวในบ้าน</label>
+            <div class="check-row"><label class="check-item"><input type="radio" name="r_private_rm" value="มี" checked> มี</label><label class="check-item"><input type="radio" name="r_private_rm" value="ไม่มี"> ไม่มี</label></div>
+          </div>
+          <div class="form-group" style="margin-top:10px;"><label>สภาพแวดล้อมบ้าน</label>
+            <div class="check-row"><label class="check-item"><input type="radio" name="r_safe" value="ปลอดภัย" checked> ปลอดภัย</label><label class="check-item"><input type="radio" name="r_safe" value="ไม่ปลอดภัย"> ไม่ปลอดภัย</label><label class="check-item"><input type="radio" name="r_safe" value="มีจุดเสี่ยง"> มีจุดเสี่ยง</label></div>
           </div>
         </div>
 
+        <div class="form-card">
+          <h3><i class="ti ti-map-pin"></i> พิกัด GPS บ้านนักเรียน</h3>
+          <button type="button" class="gps-btn" onclick="getGPS()"><i class="ti ti-current-location"></i> ดึงพิกัดปัจจุบัน (GPS)</button>
+          <div class="gps-result" id="gps-result" style="display:none"><span id="gps-text">กำลังดึงพิกัด...</span></div>
+          <div class="form-row" style="margin-top:12px">
+            <div class="form-group"><label>Latitude</label><input type="text" id="f-lat" readonly></div>
+            <div class="form-group"><label>Longitude</label><input type="text" id="f-lng" readonly></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="form-step-4" class="hidden">
+        <div class="form-card">
+          <h3><i class="ti ti-signature"></i> ลายเซ็นผู้ปกครอง</h3>
+          <div class="sig-wrap">
+            <canvas class="sig-canvas" id="sig-guardian"></canvas>
+            <button type="button" class="sig-clear" onclick="clearSig('sig-guardian')">ล้าง</button>
+            <div class="sig-label-overlay">ลงลายมือชื่อผู้ปกครอง</div>
+          </div>
+          <div class="form-group" style="margin-top: 12px;">
+            <label style="color: var(--primary);">ชื่อ-สกุล ผู้ปกครอง (ตัวบรรจงระบุในวงเล็บรายงาน)</label>
+            <input type="text" id="f-sig-name-guard-input" placeholder="เช่น นายสมชาย ใจดี">
+          </div>
+        </div>
+
+        <div class="form-card">
+          <h3><i class="ti ti-signature"></i> ลายเซ็นครูที่ปรึกษา</h3>
+          <div class="sig-wrap">
+            <canvas class="sig-canvas" id="sig-teacher1"></canvas>
+            <button type="button" class="sig-clear" onclick="clearSig('sig-teacher1')">ล้าง</button>
+            <div class="sig-label-overlay">ลงลายมือชื่อครูที่ปรึกษาคนที่ 1</div>
+          </div>
+          <div class="form-group" style="margin-top: 12px;">
+            <label style="color: var(--primary);">ชื่อ-สกุล ครูที่ปรึกษา (ตัวบรรจงระบุในวงเล็บรายงาน)</label>
+            <input type="text" id="f-sig-name-teacher-input" placeholder="เช่น นางสาวอมรรัตน์ เจริญสุข">
+          </div>
+        </div>
+
+        <div class="form-card" style="text-align: center;">
+          <h3>พิมพ์แบบฟอร์มรายงาน</h3>
+          <button type="button" class="btn btn-pdf" onclick="prepareAndPrintPDF()" style="width: 100%; justify-content: center;">พิมพ์รายงาน PDF</button>
+        </div>
       </div>
 
       <div class="nav-btns" id="form-nav">
