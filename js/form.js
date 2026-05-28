@@ -44,6 +44,11 @@ function openVisitForm(id, name, cls, no, gpa) {
   document.getElementById('f-class').value = cls;
   document.getElementById('f-no').value = no;
   document.getElementById('f-gpa').value = gpa;
+  
+  // โค้ดเพิ่มใหม่: ดึงชื่อนักเรียนหรือเว้นว่างไว้ให้ครูตรวจสอบชื่อผู้ปกครองและชื่อครูประจำชั้น
+  document.getElementById('f-sig-name-guard-input').value = ""; 
+  document.getElementById('f-sig-name-teacher-input').value = document.getElementById('f-teacher-1').value || "นางสาวอมรรัตน์ เจริญสุข";
+
   showTab('form');
   showToast(`เริ่มบันทึก: ${name}`);
 }
@@ -300,10 +305,15 @@ function prepareAndPrintPDF() {
   document.getElementById('print-sig-img-guardian').src = canvasG ? canvasG.toDataURL() : "";
   document.getElementById('print-sig-img-teacher').src = canvasT ? canvasT.toDataURL() : "";
   
-  const gName = getVal('f-guard-name') || getVal('f-father-name') || getVal('f-mother-name') || ".........................................";
-  document.getElementById('p-sig-name-guardian').textContent = gName;
-  document.getElementById('p-sig-name-teacher').textContent = getVal('f-teacher-1') || ".........................................";
+// ลบโค้ดเก่าบริเวณคำสั่งสกัดค่า gName ออก แล้วแทนที่ด้วยบล็อกนี้ครับ
+  const sigGuardName = getVal('f-sig-name-guard-input') || "....................................................";
+  const sigTeacherName = getVal('f-sig-name-teacher-input') || "....................................................";
+  
+  // ส่งรายชื่อที่พิมพ์ตัวบรรจงไปแสดงผลภายในเครื่องหมายวงเล็บ ( ) ของหน้าพิมพ์รายงาน PDF
+  document.getElementById('p-sig-name-guardian').textContent = sigGuardName;
+  document.getElementById('p-sig-name-teacher').textContent = sigTeacherName;
 
+  // เปิดหน้าต่างสั่งพิมพ์รายงานของเบราว์เซอร์
   window.print();
 }
 

@@ -276,6 +276,42 @@
           </div>
         </div>
 
+<!-- Step 4: ลายเซ็น -->
+        <div id="form-step-4" class="hidden">
+          <div class="form-card">
+            <h3><i class="ti ti-signature"></i> ลายเซ็นผู้ปกครอง</h3>
+            <div class="sig-wrap">
+              <canvas class="sig-canvas" id="sig-guardian" height="150"></canvas>
+              <button type="button" class="sig-clear" onclick="clearSig('sig-guardian')">ล้าง</button>
+              <div class="sig-label-overlay">ลงลายมือชื่อผู้ปกครอง</div>
+            </div>
+            <!-- ส่วนที่เพิ่มใหม่: ช่องระบุชื่อผู้ปกครองตัวบรรจง -->
+            <div class="form-group" style="margin-top: 12px;">
+              <label style="color: var(--primary);">ชื่อ-สกุล ผู้ปกครอง (ตัวบรรจงเพื่อแสดงในวงเล็บรายงาน)</label>
+              <input type="text" id="f-sig-name-guard-input" placeholder="เช่น นายสมชาย จิรทิพย์">
+            </div>
+          </div>
+
+          <div class="form-card">
+            <h3><i class="ti ti-signature"></i> ลายเซ็นครูที่ปรึกษา</h3>
+            <div class="sig-wrap">
+              <canvas class="sig-canvas" id="sig-teacher1" height="150"></canvas>
+              <button type="button" class="sig-clear" onclick="clearSig('sig-teacher1')">ล้าง</button>
+              <div class="sig-label-overlay">ลงลายมือชื่อครูที่ปรึกษาคนที่ 1</div>
+            </div>
+            <!-- ส่วนที่เพิ่มใหม่: ช่องระบุชื่อครูที่ปรึกษาตัวบรรจง -->
+            <div class="form-group" style="margin-top: 12px;">
+              <label style="color: var(--primary);">ชื่อ-สกุล ครูที่ปรึกษา (ตัวบรรจงเพื่อแสดงในวงเล็บรายงาน)</label>
+              <input type="text" id="f-sig-name-teacher-input" placeholder="เช่น นางสาวอมรรัตน์ เจริญสุข">
+            </div>
+          </div>
+          
+          <div class="form-card" style="text-align: center;">
+            <h3>พิมพ์แบบฟอร์มรายงาน</h3>
+            <button type="button" class="btn btn-pdf" onclick="prepareAndPrintPDF()" style="width: 100%; justify-content: center;">พิมพ์รายงาน PDF</button>
+          </div>
+        </div>
+
         <div id="form-step-4" class="hidden">
           <div class="form-card">
             <h3><i class="ti ti-signature"></i> ลายเซ็นผู้ปกครอง</h3>
