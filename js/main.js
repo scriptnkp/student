@@ -162,40 +162,25 @@ function filterClass(cls, el) {
   renderStudentList(list);
 }
 
-function searchStudents(q) {
-  const list = q ? students.filter(s => s.name.includes(q)) : students;
-  renderStudentList(list);
-}
+// ผูกระบบเข้า Window ป้องกัน Scope พัง
+window.showTab = (tab) => {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.header-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + tab).classList.add('active');
+  const tabEl = document.querySelector(`[data-tab="${tab}"]`);
+  if (tabEl) tabEl.classList.add('active');
+  if (tab === 'form') window.goToStep(1);
+};
 
-function setRole(role) {
+window.setRole = (role) => {
   currentRole = role;
   document.querySelectorAll('.role-btn').forEach((b,i) => {
     b.classList.toggle('active', (i === 0 && role === 'admin') || (i === 1 && role === 'teacher'));
   });
   document.getElementById('admin-dash').classList.toggle('hidden', role === 'teacher');
   document.getElementById('teacher-dash').classList.toggle('hidden', role === 'admin');
-}
+};
 
-function showTab(tab) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.header-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('page-' + tab).classList.add('active');
-  const tabEl = document.querySelector(`[data-tab="${tab}"]`);
-  if (tabEl) tabEl.classList.add('active');
-  if (tab === 'form') goToStep(1);
-}
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  if(!t) return;
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
-}
-
-// ผูกเข้า Window ป้องกัน Scope พัง
-window.showTab = showTab;
-window.setRole = setRole;
 window.filterClass = filterClass;
-window.searchStudents = searchStudents;
-window.showToast = showToast;
+window.searchStudents = (q) => { renderStudentList(q ? students.filter(s => s.name.includes(q)) : students); };
+window.showToast = (msg) => { const t = document.getElementById('toast'); if(!t) return; t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); };
