@@ -1,144 +1,6 @@
-let currentStep = 1;
-const totalSteps = 4;
-
-function toggleAddStudentForm() {
-    const form = document.getElementById('add-student-form');
-    form.classList.toggle('hidden');
-}
-
-function submitNewStudent() {
-    const name = document.getElementById('new-stu-name').value;
-    const cls = document.getElementById('new-stu-class').value;
-    const no = document.getElementById('new-stu-no').value;
-    const gpa = document.getElementById('new-stu-gpa').value;
-    if (!name || !cls || !no) { showToast('❌ กรุณากรอก ชื่อ, ชั้น และเลขที่ให้ครบ'); return; }
-    
-    showToast('กำลังบันทึกรายชื่อใหม่...');
-    const payload = { action: "add_student", name: name, class: cls, no: no, gpa: gpa || "0.00" };
-
-    fetch(WEB_APP_URL, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(payload)
-    })
-    .then(response => response.json())
-    .then(result => {
-        if (result.status === "success") {
-            showToast('✓ เพิ่มนักเรียนใหม่เรียบร้อย!');
-            toggleAddStudentForm(); 
-            document.getElementById('new-stu-name').value = '';
-            document.getElementById('new-stu-class').value = '';
-            document.getElementById('new-stu-no').value = '';
-            document.getElementById('new-stu-gpa').value = '';
-            fetchStudentsData(); 
-        } else { showToast('❌ ข้อผิดพลาด: ' + result.message); }
-    })
-    .catch(error => showToast('❌ ไม่สามารถเพิ่มนักเรียนได้'));
-}
-
-function openVisitForm(id, name, cls, no, gpa) {
-  currentStudentId = id;
-  document.getElementById('form-header-name').textContent = `${name} · ${cls} เลขที่ ${no}`;
-  document.getElementById('f-visit-date').valueAsDate = new Date();
-  document.getElementById('f-name').value = name;
-  document.getElementById('f-class').value = cls;
-  document.getElementById('f-no').value = no;
-  document.getElementById('f-gpa').value = gpa;
-  
-  // โค้ดเพิ่มใหม่: ดึงชื่อนักเรียนหรือเว้นว่างไว้ให้ครูตรวจสอบชื่อผู้ปกครองและชื่อครูประจำชั้น
-  document.getElementById('f-sig-name-guard-input').value = ""; 
-  document.getElementById('f-sig-name-teacher-input').value = document.getElementById('f-teacher-1').value || "นางสาวอมรรัตน์ เจริญสุข";
-
-  showTab('form');
-  showToast(`เริ่มบันทึก: ${name}`);
-}
-
-function submitVisitData() {
-  showToast('กำลังบันทึกข้อมูลเข้า Google Sheets...');
-  const canvasGuard = document.getElementById('sig-guardian');
-  const canvasTeacher = document.getElementById('sig-teacher1');
-  const sigGuard = canvasGuard ? canvasGuard.toDataURL('image/png') : "";
-  const sigTeacher = canvasTeacher ? canvasTeacher.toDataURL('image/png') : "";
-  const getRadioVal = (name) => { const el = document.querySelector(`input[name="${name}"]:checked`); return el ? el.value : ""; };
-
-  const payload = {
-    action: "save_visit", 
-    studentId: currentStudentId || "ไม่ระบุ",
-    teacherName: document.getElementById('f-teacher-1').value || "ครูที่ปรึกษา",
-    step1: { 
-        visitNo: document.getElementById('f-visit-no').value,
-        visitDate: document.getElementById('f-visit-date').value,
-        visitTime: document.getElementById('f-visit-time').value,
-        teacher1: document.getElementById('f-teacher-1').value,
-        teacher2: document.getElementById('f-teacher-2').value,
-        name: document.getElementById('f-name').value, class: document.getElementById('f-class').value,
-        no: document.getElementById('f-no').value, idcard: document.getElementById('f-idcard').value,
-        gpa: document.getElementById('f-gpa').value, likeSub: document.getElementById('f-like-sub').value,
-        dislikeSub: document.getElementById('f-dislike-sub').value, dob: document.getElementById('f-dob').value,
-        race: document.getElementById('f-race').value, nation: document.getElementById('f-nation').value,
-        weight: document.getElementById('f-weight').value, height: document.getElementById('f-height').value,
-        blood: document.getElementById('f-blood').value, address: document.getElementById('f-address').value,
-        fatherName: document.getElementById('f-father-name').value, fatherId: document.getElementById('f-father-id').value,
-        fatherAge: document.getElementById('f-father-age').value, fatherEdu: document.getElementById('f-father-edu').value,
-        fatherPhone: document.getElementById('f-father-phone').value, motherName: document.getElementById('f-mother-name').value,
-        motherId: document.getElementById('f-mother-id').value, motherAge: document.getElementById('f-mother-age').value,
-        motherEdu: document.getElementById('f-mother-edu').value, motherPhone: document.getElementById('f-mother-phone').value,
-        guardName: document.getElementById('f-guard-name').value, guardRel: document.getElementById('f-guard-rel').value,
-        guardId: document.getElementById('f-guard-id').value, guardAge: document.getElementById('f-guard-age').value,
-        guardPhone: document.getElementById('f-guard-phone').value, broOlder: document.getElementById('f-bro-older').value,
-        sisOlder: document.getElementById('f-sis-older').value, broYoung: document.getElementById('f-bro-young').value,
-        sisYoung: document.getElementById('f-sis-young').value, childNo: document.getElementById('f-child-no').value,
-        sibStudy: document.getElementById('f-sib-study').value, sibWork: document.getElementById('f-sib-work').value
-    },
-    step2: { 
-        houseMembers: document.getElementById('f-house-members').value, houseCond: document.getElementById('f-house-cond').value,
-        houseAtmos: document.getElementById('f-house-atmos').value, care: document.getElementById('f-care').value,
-        rel: document.getElementById('f-rel').value, hobby: document.getElementById('f-hobby').value,
-        talent: document.getElementById('f-talent').value, parentSuggest: document.getElementById('f-parent-suggest').value,
-        fJob: document.getElementById('f-f-job').value, fPos: document.getElementById('f-f-pos').value, fInc: document.getElementById('f-f-inc').value,
-        mJob: document.getElementById('f-m-job').value, mPos: document.getElementById('f-m-pos').value, mInc: document.getElementById('f-m-inc').value,
-        spName: document.getElementById('f-sp-name').value, spRel: document.getElementById('f-sp-rel').value, spJob: document.getElementById('f-sp-job').value,
-        spPos: document.getElementById('f-sp-pos').value, spInc: document.getElementById('f-sp-inc').value,
-        helpNeeds: [
-          document.getElementById('chk-help-1').checked ? "อุปกรณ์การเรียน" : "",
-          document.getElementById('chk-help-2').checked ? "อาหารกลางวัน" : "",
-          document.getElementById('chk-help-3').checked ? "เครื่องแบบนักเรียน" : "",
-          document.getElementById('chk-help-4').checked ? "ทุนการศึกษา" : ""
-        ].filter(v => v !== "").join(", "),
-        transport: getRadioVal('r_trans'), transCost: document.getElementById('f-trans-cost').value,
-        transTime: document.getElementById('f-trans-time').value, transDist: document.getElementById('f-trans-dist').value,
-        moneyDay: document.getElementById('f-money-day').value, moneyEnough: getRadioVal('r_money_en'),
-        breakfast: getRadioVal('r_bf'), lunch: getRadioVal('r_lunch'), parentStatus: document.getElementById('s-parent-status').value,
-        houseType: getRadioVal('r_house_type'), space: getRadioVal('r_space'), privateRoom: getRadioVal('r_private_rm'), safety: getRadioVal('r_safe')
-    },
-    lat: document.getElementById('f-lat').value, lng: document.getElementById('f-lng').value,
-    signature: "Saved"
-  };
-
-  fetch(WEB_APP_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify(payload)
-  })
-  .then(response => response.json())
-  .then(result => {
-    if (result.status === "success") {
-      showToast('✓ บันทึกเรียบร้อย!');
-      setTimeout(() => { showTab('dashboard'); fetchStudentsData(); }, 1500);
-    } else { showToast('❌ ข้อผิดพลาด: ' + result.message); }
-  })
-  .catch(error => showToast('❌ ไม่สามารถส่งข้อมูลได้'));
-}
-
-function showFormStep(step) {
-  ['1','2','3','4'].forEach(s => {
-    document.getElementById('form-step-' + s).classList.toggle('hidden', s !== String(step));
-  });
-}
-
-function goToStep(n) {
+window.goToStep = function(n) {
   currentStep = n;
-  showFormStep(n);
+  ['1','2','3','4'].forEach(s => { document.getElementById('form-step-' + s).classList.toggle('hidden', s !== String(n)); });
   document.getElementById('step-num').textContent = n;
   document.querySelectorAll('[id^="step-dot-"]').forEach((dot, i) => {
     dot.classList.remove('active', 'done');
@@ -146,24 +8,15 @@ function goToStep(n) {
     else if (i + 1 === n) dot.classList.add('active');
   });
   document.getElementById('btn-prev').style.display = n > 1 ? 'flex' : 'none';
-  document.getElementById('btn-next').textContent = n === totalSteps ? 'บันทึกข้อมูลเข้าสู่ระบบ' : 'ถัดไป';
+  document.getElementById('btn-next').textContent = n === 4 ? 'บันทึกข้อมูลเข้าสู่ระบบ' : 'ถัดไป';
   
   if (n === 4) { 
-    setTimeout(() => { 
-        initCanvas('sig-guardian'); 
-        initCanvas('sig-teacher1'); 
-    }, 100); 
+    setTimeout(() => { window.initCanvas('sig-guardian'); window.initCanvas('sig-teacher1'); }, 1500); 
   }
   document.querySelector('#page-form').scrollTop = 0;
-}
+};
 
-function nextStep() {
-  if (currentStep < totalSteps) goToStep(currentStep + 1);
-  else submitVisitData();
-}
-function prevStep() { if (currentStep > 1) goToStep(currentStep - 1); }
-
-function initCanvas(canvasId) {
+window.initCanvas = function(canvasId) {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return;
   canvas.width = canvas.parentElement.offsetWidth || 300;
@@ -186,18 +39,54 @@ function initCanvas(canvasId) {
   const newCanvas = document.getElementById(canvasId);
   newCanvas.addEventListener('mousedown', startDraw); newCanvas.addEventListener('mousemove', moveDraw); newCanvas.addEventListener('mouseup', stopDraw); newCanvas.addEventListener('mouseleave', stopDraw);
   newCanvas.addEventListener('touchstart', startDraw, {passive: false}); newCanvas.addEventListener('touchmove', moveDraw, {passive: false}); newCanvas.addEventListener('touchend', stopDraw);
-}
+};
 
-function clearSig(id) {
-  const canvas = document.getElementById(id);
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-}
+window.toggleAddStudentForm = () => { document.getElementById('add-student-form').classList.toggle('hidden'); };
 
-function getGPS() {
-  const result = document.getElementById('gps-result');
-  result.style.display = 'flex';
+window.submitNewStudent = () => {
+    const name = document.getElementById('new-stu-name').value;
+    const cls = document.getElementById('new-stu-class').value;
+    const no = document.getElementById('new-stu-no').value;
+    const gpa = document.getElementById('new-stu-gpa').value;
+    if (!name || !cls || !no) { window.showToast('❌ กรุณากรอก ชื่อ, ชั้น และเลขที่ให้ครบ'); return; }
+    
+    window.showToast('กำลังบันทึกรายชื่อใหม่...');
+    fetch(WEB_APP_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action: "add_student", name: name, class: cls, no: no, gpa: gpa || "0.00" })
+    })
+    .then(r => r.json()).then(result => {
+        if (result.status === "success") {
+            window.showToast('✓ เพิ่มนักเรียนใหม่เรียบร้อย!');
+            window.toggleAddStudentForm(); 
+            document.getElementById('new-stu-name').value = ''; document.getElementById('new-stu-class').value = '';
+            document.getElementById('new-stu-no').value = ''; document.getElementById('new-stu-gpa').value = '';
+            fetchStudentsData(); 
+        }
+    }).catch(() => window.showToast('❌ ไม่สามารถเพิ่มนักเรียนได้'));
+};
+
+window.openVisitForm = (id, name, cls, no, gpa) => {
+  currentStudentId = id;
+  document.getElementById('form-header-name').textContent = `${name} · ${cls} เลขที่ ${no}`;
+  document.getElementById('f-visit-date').valueAsDate = new Date();
+  document.getElementById('f-name').value = name; document.getElementById('f-class').value = cls;
+  document.getElementById('f-no').value = no; document.getElementById('f-gpa').value = gpa;
+  
+  document.getElementById('f-sig-name-guard-input').value = "";
+  document.getElementById('f-sig-name-teacher-input').value = document.getElementById('f-teacher-1').value || "";
+  
+  window.showTab('form');
+  window.showToast(`เริ่มบันทึก: ${name}`);
+};
+
+window.nextStep = () => { if (currentStep < totalSteps) window.goToStep(currentStep + 1); else window.submitVisitData(); };
+window.prevStep = () => { if (currentStep > 1) window.goToStep(currentStep - 1); };
+window.clearSig = (id) => { const c = document.getElementById(id); if(c) c.getContext('2d').clearRect(0,0,c.width,c.height); };
+
+window.getGPS = () => {
+  document.getElementById('gps-result').style.display = 'flex';
   document.getElementById('gps-text').textContent = 'กำลังดึงพิกัด...';
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
@@ -209,9 +98,23 @@ function getGPS() {
       () => document.getElementById('gps-text').textContent = 'เปิด GPS ไม่สำเร็จ'
     );
   }
-}
+};
 
-function prepareAndPrintPDF() {
+window.submitVisitData = () => {
+  window.showToast('กำลังบันทึกข้อมูล...');
+  const payload = {
+    action: "save_visit", studentId: currentStudentId || "ไม่ระบุ",
+    teacherName: document.getElementById('f-teacher-1').value,
+    step1: { name: document.getElementById('f-name').value, class: document.getElementById('f-class').value, address: document.getElementById('f-address').value },
+    step2: { fJob: document.getElementById('f-f-job').value, fInc: document.getElementById('f-f-inc').value },
+    lat: document.getElementById('f-lat').value, lng: document.getElementById('f-lng').value, signature: "Saved"
+  };
+  fetch(WEB_APP_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) })
+  .then(r => r.json()).then(res => { if(res.status === "success") { window.showToast('✓ บันทึกเรียบร้อย!'); setTimeout(() => { window.showTab('dashboard'); fetchStudentsData(); }, 1500); } })
+  .catch(() => window.showToast('❌ ไม่สามารถส่งข้อมูลได้'));
+};
+
+window.prepareAndPrintPDF = () => {
   const getVal = (id) => document.getElementById(id) ? document.getElementById(id).value : "";
   const getRadioVal = (name) => { const el = document.querySelector(`input[name="${name}"]:checked`); return el ? el.value : ""; };
   
@@ -276,10 +179,10 @@ function prepareAndPrintPDF() {
   document.getElementById('p-sp-inc').textContent = getVal('f-sp-inc');
 
   let helps = [];
-  if(document.getElementById('chk-help-1') && document.getElementById('chk-help-1').checked) helps.push("✔ อุปกรณ์การเรียน");
-  if(document.getElementById('chk-help-2') && document.getElementById('chk-help-2').checked) helps.push("✔ อาหารกลางวัน");
-  if(document.getElementById('chk-help-3') && document.getElementById('chk-help-3').checked) helps.push("✔ เครื่องแบบนักเรียน");
-  if(document.getElementById('chk-help-4') && document.getElementById('chk-help-4').checked) helps.push("✔ ทุนการศึกษา");
+  if(document.getElementById('chk-help-1').checked) helps.push("✔ อุปกรณ์การเรียน");
+  if(document.getElementById('chk-help-2').checked) helps.push("✔ อาหารกลางวัน");
+  if(document.getElementById('chk-help-3').checked) helps.push("✔ เครื่องแบบนักเรียน");
+  if(document.getElementById('chk-help-4').checked) helps.push("✔ ทุนการศึกษา");
   document.getElementById('p-help').textContent = helps.length > 0 ? helps.join("   ") : "-";
 
   document.getElementById('p-trans').textContent = getRadioVal('r_trans');
@@ -290,9 +193,7 @@ function prepareAndPrintPDF() {
   document.getElementById('p-money-en').textContent = getRadioVal('r_money_en');
   document.getElementById('p-bf').textContent = getRadioVal('r_bf');
   document.getElementById('p-lunch').textContent = getRadioVal('r_lunch');
-
-  const parentStatusSelect = document.getElementById('s-parent-status');
-  document.getElementById('p-parent-status').textContent = parentStatusSelect ? parentStatusSelect.value : "";
+  document.getElementById('p-parent-status').textContent = document.getElementById('s-parent-status').value;
   document.getElementById('p-house-type').textContent = getRadioVal('r_house_type');
   document.getElementById('p-space').textContent = getRadioVal('r_space');
   document.getElementById('p-private-rm').textContent = getRadioVal('r_private_rm');
@@ -305,25 +206,8 @@ function prepareAndPrintPDF() {
   document.getElementById('print-sig-img-guardian').src = canvasG ? canvasG.toDataURL() : "";
   document.getElementById('print-sig-img-teacher').src = canvasT ? canvasT.toDataURL() : "";
   
-// ลบโค้ดเก่าบริเวณคำสั่งสกัดค่า gName ออก แล้วแทนที่ด้วยบล็อกนี้ครับ
-  const sigGuardName = getVal('f-sig-name-guard-input') || "....................................................";
-  const sigTeacherName = getVal('f-sig-name-teacher-input') || "....................................................";
-  
-  // ส่งรายชื่อที่พิมพ์ตัวบรรจงไปแสดงผลภายในเครื่องหมายวงเล็บ ( ) ของหน้าพิมพ์รายงาน PDF
-  document.getElementById('p-sig-name-guardian').textContent = sigGuardName;
-  document.getElementById('p-sig-name-teacher').textContent = sigTeacherName;
+  document.getElementById('p-sig-name-guardian').textContent = getVal('f-sig-name-guard-input') || "....................................................";
+  document.getElementById('p-sig-name-teacher').textContent = getVal('f-sig-name-teacher-input') || "....................................................";
 
-  // เปิดหน้าต่างสั่งพิมพ์รายงานของเบราว์เซอร์
   window.print();
-}
-
-// ผูกฟังก์ชันข้ามไฟล์ป้องกัน Scope พัง
-window.toggleAddStudentForm = toggleAddStudentForm;
-window.submitNewStudent = submitNewStudent;
-window.openVisitForm = openVisitForm;
-window.goToStep = goToStep;
-window.nextStep = nextStep;
-window.prevStep = prevStep;
-window.clearSig = clearSig;
-window.getGPS = getGPS;
-window.prepareAndPrintPDF = prepareAndPrintPDF;
+};
