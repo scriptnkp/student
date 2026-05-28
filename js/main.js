@@ -1,50 +1,35 @@
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwn26krRKHqpeLnc6dVFgM3XR3J6pPyRCBvLodDWOJjwSdCPnjqg4BFlSvM80ACSwfprQ/exec"; 
 let currentRole = 'admin';
+let selectedRound = 1; // ตัวแปรรอบการเยี่ยมเริ่มต้นเริ่มต้นที่ครั้งที่ 1
+let rawStudents = [];
+let rawVisits = [];
 let students = [];
 let teacherStudents = [];
 let currentStudentId = null;
 
-// แก้ปัญหา พ.ศ. ปีการศึกษาอัตโนมัติเมื่อเปิดหน้าเว็บ
 window.onload = () => {
   const now = new Date();
   let currentBE = now.getFullYear() + 543;
-  
-  // กฎปฏิทินการศึกษาไทย: ม.ค. (0) ถึง เม.ย. (3) ถือเป็นปลายปีการศึกษาเก่า
-  if (now.getMonth() < 4) {
-    currentBE--;
-  }
-  
+  if (now.getMonth() < 4) { currentBE--; }
   const yearEl = document.getElementById('current-academic-year');
-  if (yearEl) {
-    yearEl.textContent = currentBE;
-  }
+  if (yearEl) { yearEl.textContent = currentBE; }
 
   fetchStudentsData();
 };
 
 async function fetchStudentsData() {
-  showToast('กำลังโหลดข้อมูล...'); 
+  showToast('กำลังโหลดข้อมูลคลาวด์...'); 
   try {
     const response = await fetch(WEB_APP_URL);
     const result = await response.json();
     if (result.status === "success") {
-      students = result.data.map((s, index) => {
-        const avatars = ['avatar-blue', 'avatar-green', 'avatar-purple', 'avatar-orange'];
-        return {
-          id: s.id,
-          name: s.name || s.Name,
-          class: s.class || s.Class,
-          no: s.no || s.Number,
-          gpa: s.gpa || s.GPA,
-          visited: s.visited === true || s.visited === "TRUE" || s.Status === "TRUE" || s.visited === 1,
-          risk: s.risk === true || s.risk === "TRUE" || s.Risk_Flag === "TRUE" || s.risk === 1,
-          avatar: avatars[index % 4] 
-        };
-      });
-      teacherStudents = students.filter(s => s.class === 'ม.1/9');
+      rawStudents = result.students || [];
+      rawVisits = result.visits || [];
       
-      updateDashboardStats(); 
+      // คำนวณจับคู่ข้อมูลตามรอบประวัติจริง
+      processStudentStatus();
       
+      // สร้างปุ่มกรอง Dynamic
       const uniqueClasses = [...new Set(students.map(s => {
           if(!s.class) return "";
           return s.class.split('/')[0].trim(); 
@@ -60,17 +45,57 @@ async function fetchStudentsData() {
                          <button class="filter-chip" onclick="filterClass('unvisited', this)">ยังไม่เยี่ยม</button>`;
           filterBar.innerHTML = filterHTML;
       }
-
-      renderStudentList(students);
-      renderTeacherList();
       showToast('โหลดข้อมูลสำเร็จ!');
-    } else {
-      showToast('❌ โหลดข้อมูลไม่สำเร็จ');
     }
   } catch (error) {
-    showToast('❌ ไม่สามารถเชื่อมต่อฐานข้อมูลได้');
+    showToast('❌ การเชื่อมต่อฐานข้อมูลล้มเหลว');
   }
 }
+
+// ฟังก์ชันสำคัญ: แปลงสถานะ เยี่ยมแล้ว ตามรอบที่เลือกแบบ Dynamic
+function processStudentStatus() {
+  students = rawStudents.map((s, index) => {
+    const avatars = ['avatar-blue', 'avatar-green', 'avatar-purple', 'avatar-orange'];
+    
+    // ตรวจสอบข้อมูลในแท็บ Visits ว่าเด็กคนนี้เคยถูกบันทึกใน ครั้งที่ ตรงกับที่เลือกไว้ไหม
+    const isVisited = rawVisits.some(v => {
+      if (String(v.Student_ID) !== String(s.id)) return false;
+      try {
+        const step1 = JSON.parse(v.Step1_Basic);
+        return String(step1.visitNo) === String(selectedRound);
+      } catch(e) { return false; }
+    });
+
+    return {
+      id: s.id,
+      name: s.name || s.Name,
+      class: s.class || s.Class,
+      no: s.no || s.Number,
+      gpa: s.gpa || s.GPA,
+      visited: isVisited, // สถานะเปลี่ยนไปตามตัวแปรรอบการเลือก
+      risk: s.risk === true || s.risk === "TRUE" || s.risk === 1,
+      avatar: avatars[index % 4]
+    };
+  });
+
+  teacherStudents = students.filter(s => s.class === 'ม.1/9');
+  updateDashboardStats();
+  renderStudentList(students);
+  renderTeacherList();
+}
+
+// ฟังก์ชันเมื่อเปลี่ยนรอบครั้งที่ 1, 2, 3 ในคอมโบ้บ็อกซ์หน้าจอ
+window.changeVisitRound = function(roundVal) {
+  selectedRound = parseInt(roundVal);
+  
+  // บังคับเปลี่ยนตัวเลขใน Input ฟอร์มครั้งที่ อัตโนมัติ ครูจะได้ไม่ต้องพิมพ์ใหม่
+  const formVisitNoInput = document.getElementById('f-visit-no');
+  if(formVisitNoInput) { formVisitNoInput.value = selectedRound; }
+  
+  // ประมวลผลสถานะนักเรียนชุดใหม่ทันที
+  processStudentStatus();
+  showToast(`สลับข้อมูลเป็น: ครั้งที่ ${selectedRound}`);
+};
 
 function updateDashboardStats() {
   const total = students.length;
@@ -176,7 +201,6 @@ function filterClass(cls, el) {
   renderStudentList(list);
 }
 
-// ผูกระบบเข้า Window ป้องกัน Scope พัง
 window.showTab = (tab) => {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.header-tab').forEach(t => t.classList.remove('active'));
@@ -188,9 +212,7 @@ window.showTab = (tab) => {
 
 window.setRole = (role) => {
   currentRole = role;
-  document.querySelectorAll('.role-btn').forEach((b,i) => {
-    b.classList.toggle('active', (i === 0 && role === 'admin') || (i === 1 && role === 'teacher'));
-  });
+  document.querySelectorAll('.role-btn').forEach((b,i) => { b.classList.toggle('active', (i === 0 && role === 'admin') || (i === 1 && role === 'teacher')); });
   document.getElementById('admin-dash').classList.toggle('hidden', role === 'teacher');
   document.getElementById('teacher-dash').classList.toggle('hidden', role === 'admin');
 };
