@@ -1,4 +1,3 @@
-// ====== ตั้งค่าตัวแปร Global ที่ใช้ร่วมกัน ======
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwn26krRKHqpeLnc6dVFgM3XR3J6pPyRCBvLodDWOJjwSdCPnjqg4BFlSvM80ACSwfprQ/exec"; 
 let currentRole = 'admin';
 let students = [];
@@ -23,8 +22,8 @@ async function fetchStudentsData() {
           class: s.class || s.Class,
           no: s.no || s.Number,
           gpa: s.gpa || s.GPA,
-          visited: s.visited === true || s.visited === "TRUE" || s.Status === "TRUE",
-          risk: s.risk === true || s.risk === "TRUE" || s.Risk_Flag === "TRUE",
+          visited: s.visited === true || s.visited === "TRUE" || s.Status === "TRUE" || s.visited === 1,
+          risk: s.risk === true || s.risk === "TRUE" || s.Risk_Flag === "TRUE" || s.risk === 1,
           avatar: avatars[index % 4] 
         };
       });
@@ -32,7 +31,6 @@ async function fetchStudentsData() {
       
       updateDashboardStats(); 
       
-      // สร้างปุ่มฟิลเตอร์ระดับชั้นอัตโนมัติ
       const uniqueClasses = [...new Set(students.map(s => {
           if(!s.class) return "";
           return s.class.split('/')[0].trim(); 
@@ -61,7 +59,6 @@ async function fetchStudentsData() {
 }
 
 function updateDashboardStats() {
-  // 1. สถิติรวม
   const total = students.length;
   const visited = students.filter(s => s.visited).length;
   const pending = total - visited;
@@ -75,7 +72,6 @@ function updateDashboardStats() {
   document.getElementById('stat-percent').textContent = percent + '%';
   document.getElementById('stat-prog-fill').style.width = percent + '%';
 
-  // 2. สถิติห้อง (ครู)
   const tTotal = teacherStudents.length;
   const tVisited = teacherStudents.filter(s => s.visited).length;
   const tPending = tTotal - tVisited;
@@ -87,7 +83,6 @@ function updateDashboardStats() {
   document.getElementById('t-percent').textContent = tPercent + '%';
   document.getElementById('t-prog-fill').style.width = tPercent + '%';
 
-  // 3. สร้างการ์ดความคืบหน้าแยกตามชั้น (Class Grid) อัตโนมัติ
   const classGroups = {};
   students.forEach(s => {
       if(!s.class) return;
@@ -111,12 +106,10 @@ function updateDashboardStats() {
   if(gridContainer) {
       let gridHTML = '';
       const sortedClasses = Object.keys(classGroups).sort();
-      
       sortedClasses.forEach(cls => {
           const stats = classGroups[cls];
           const pct = stats.total === 0 ? 0 : Math.round((stats.visited / stats.total) * 100);
           const c = classColors[cls] || defaultColor;
-
           gridHTML += `
           <div class="class-card" onclick="showTab('students'); filterClass('${cls}', null);">
             <h3><span style="background: ${c.bg}; color:${c.text}; padding:2px 8px; border-radius:6px; font-size:12px">${cls}</span></h3>
@@ -125,8 +118,7 @@ function updateDashboardStats() {
               <span>เยี่ยมแล้ว ${stats.visited}/${stats.total}</span>
               <span style="color:${c.text}; font-weight:500">${pct}%</span>
             </div>
-          </div>
-          `;
+          </div>`;
       });
       gridContainer.innerHTML = gridHTML;
   }
@@ -144,8 +136,7 @@ function renderStudentList(list) {
       <button type="button" class="visit-btn ${s.visited ? 'done' : ''}" onclick="event.stopPropagation(); openVisitForm('${s.id}', '${s.name}', '${s.class}', '${s.no}', '${s.gpa}')">
         ${s.visited ? 'เยี่ยมแล้ว' : 'บันทึก'}
       </button>
-    </div>
-  `).join('');
+    </div>`).join('');
 }
 
 function renderTeacherList() {
@@ -157,20 +148,17 @@ function renderTeacherList() {
       <button type="button" class="visit-btn ${s.visited ? 'done' : ''}" onclick="event.stopPropagation(); openVisitForm('${s.id}', '${s.name}', '${s.class}', '${s.no}', '${s.gpa}')">
         ${s.visited ? 'เยี่ยมแล้ว' : 'บันทึก'}
       </button>
-    </div>
-  `).join('');
+    </div>`).join('');
 }
 
 function filterClass(cls, el) {
   document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
   if(el) el.classList.add('active');
-  
   let list = students;
   if (cls === 'all') list = students;
   else if (cls === 'risk') list = students.filter(s => s.risk);
   else if (cls === 'unvisited') list = students.filter(s => !s.visited);
   else list = students.filter(s => s.class.startsWith(cls));
-  
   renderStudentList(list);
 }
 
@@ -204,3 +192,10 @@ function showToast(msg) {
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
 }
+
+// ผูกเข้า Window ป้องกัน Scope พัง
+window.showTab = showTab;
+window.setRole = setRole;
+window.filterClass = filterClass;
+window.searchStudents = searchStudents;
+window.showToast = showToast;

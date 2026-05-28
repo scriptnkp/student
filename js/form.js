@@ -61,17 +61,53 @@ function submitVisitData() {
     studentId: currentStudentId || "ไม่ระบุ",
     teacherName: document.getElementById('f-teacher-1').value || "ครูที่ปรึกษา",
     step1: { 
+        visitNo: document.getElementById('f-visit-no').value,
+        visitDate: document.getElementById('f-visit-date').value,
+        visitTime: document.getElementById('f-visit-time').value,
+        teacher1: document.getElementById('f-teacher-1').value,
+        teacher2: document.getElementById('f-teacher-2').value,
         name: document.getElementById('f-name').value, class: document.getElementById('f-class').value,
-        address: document.getElementById('f-address').value,
-        fatherName: document.getElementById('f-father-name').value, motherName: document.getElementById('f-mother-name').value,
+        no: document.getElementById('f-no').value, idcard: document.getElementById('f-idcard').value,
+        gpa: document.getElementById('f-gpa').value, likeSub: document.getElementById('f-like-sub').value,
+        dislikeSub: document.getElementById('f-dislike-sub').value, dob: document.getElementById('f-dob').value,
+        race: document.getElementById('f-race').value, nation: document.getElementById('f-nation').value,
+        weight: document.getElementById('f-weight').value, height: document.getElementById('f-height').value,
+        blood: document.getElementById('f-blood').value, address: document.getElementById('f-address').value,
+        fatherName: document.getElementById('f-father-name').value, fatherId: document.getElementById('f-father-id').value,
+        fatherAge: document.getElementById('f-father-age').value, fatherEdu: document.getElementById('f-father-edu').value,
+        fatherPhone: document.getElementById('f-father-phone').value, motherName: document.getElementById('f-mother-name').value,
+        motherId: document.getElementById('f-mother-id').value, motherAge: document.getElementById('f-mother-age').value,
+        motherEdu: document.getElementById('f-mother-edu').value, motherPhone: document.getElementById('f-mother-phone').value,
+        guardName: document.getElementById('f-guard-name').value, guardRel: document.getElementById('f-guard-rel').value,
+        guardId: document.getElementById('f-guard-id').value, guardAge: document.getElementById('f-guard-age').value,
+        guardPhone: document.getElementById('f-guard-phone').value, broOlder: document.getElementById('f-bro-older').value,
+        sisOlder: document.getElementById('f-sis-older').value, broYoung: document.getElementById('f-bro-young').value,
+        sisYoung: document.getElementById('f-sis-young').value, childNo: document.getElementById('f-child-no').value,
+        sibStudy: document.getElementById('f-sib-study').value, sibWork: document.getElementById('f-sib-work').value
     },
     step2: { 
-        fJob: document.getElementById('f-f-job').value, fInc: document.getElementById('f-f-inc').value,
-        mJob: document.getElementById('f-m-job').value, mInc: document.getElementById('f-m-inc').value,
+        houseMembers: document.getElementById('f-house-members').value, houseCond: document.getElementById('f-house-cond').value,
+        houseAtmos: document.getElementById('f-house-atmos').value, care: document.getElementById('f-care').value,
+        rel: document.getElementById('f-rel').value, hobby: document.getElementById('f-hobby').value,
+        talent: document.getElementById('f-talent').value, parentSuggest: document.getElementById('f-parent-suggest').value,
+        fJob: document.getElementById('f-f-job').value, fPos: document.getElementById('f-f-pos').value, fInc: document.getElementById('f-f-inc').value,
+        mJob: document.getElementById('f-m-job').value, mPos: document.getElementById('f-m-pos').value, mInc: document.getElementById('f-m-inc').value,
+        spName: document.getElementById('f-sp-name').value, spRel: document.getElementById('f-sp-rel').value, spJob: document.getElementById('f-sp-job').value,
+        spPos: document.getElementById('f-sp-pos').value, spInc: document.getElementById('f-sp-inc').value,
+        helpNeeds: [
+          document.getElementById('chk-help-1').checked ? "อุปกรณ์การเรียน" : "",
+          document.getElementById('chk-help-2').checked ? "อาหารกลางวัน" : "",
+          document.getElementById('chk-help-3').checked ? "เครื่องแบบนักเรียน" : "",
+          document.getElementById('chk-help-4').checked ? "ทุนการศึกษา" : ""
+        ].filter(v => v !== "").join(", "),
+        transport: getRadioVal('r_trans'), transCost: document.getElementById('f-trans-cost').value,
+        transTime: document.getElementById('f-trans-time').value, transDist: document.getElementById('f-trans-dist').value,
+        moneyDay: document.getElementById('f-money-day').value, moneyEnough: getRadioVal('r_money_en'),
+        breakfast: getRadioVal('r_bf'), lunch: getRadioVal('r_lunch'), parentStatus: document.getElementById('s-parent-status').value,
+        houseType: getRadioVal('r_house_type'), space: getRadioVal('r_space'), privateRoom: getRadioVal('r_private_rm'), safety: getRadioVal('r_safe')
     },
-    lat: document.getElementById('f-lat').value,
-    lng: document.getElementById('f-lng').value,
-    signature: "Guardian: " + sigGuard.substring(0,20) + "... | Teacher: " + sigTeacher.substring(0,20) + "..."
+    lat: document.getElementById('f-lat').value, lng: document.getElementById('f-lng').value,
+    signature: "Saved"
   };
 
   fetch(WEB_APP_URL, {
@@ -107,7 +143,6 @@ function goToStep(n) {
   document.getElementById('btn-prev').style.display = n > 1 ? 'flex' : 'none';
   document.getElementById('btn-next').textContent = n === totalSteps ? 'บันทึกข้อมูลเข้าสู่ระบบ' : 'ถัดไป';
   
-  // *** [แก้บั๊กลายเซ็น] *** เรียกใช้งาน canvas หลังจากที่ div หายจากการถูกซ่อน (hidden) แล้วแน่นอน
   if (n === 4) { 
     setTimeout(() => { 
         initCanvas('sig-guardian'); 
@@ -123,51 +158,29 @@ function nextStep() {
 }
 function prevStep() { if (currentStep > 1) goToStep(currentStep - 1); }
 
-// *** [แก้บั๊กลายเซ็น] *** ฟังก์ชันนี้ถูกปรับปรุงใหม่เพื่อรองรับมือถือและการคำนวณขนาดอย่างแม่นยำ
 function initCanvas(canvasId) {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return;
-  
-  // ตั้งค่ากว้างยาวให้ตรงกับกล่องที่ครอบอยู่จริง (ห้ามเป็น 0)
   canvas.width = canvas.parentElement.offsetWidth || 300;
   canvas.height = 120;
-  
   const ctx = canvas.getContext('2d');
   let drawing = false; let lastX = 0, lastY = 0;
   
   function getPos(e) {
     const r = canvas.getBoundingClientRect();
-    if (e.touches && e.touches.length > 0) {
-        return [e.touches[0].clientX - r.left, e.touches[0].clientY - r.top];
-    }
+    if (e.touches && e.touches.length > 0) return [e.touches[0].clientX - r.left, e.touches[0].clientY - r.top];
     return [e.clientX - r.left, e.clientY - r.top];
   }
-  
   ctx.strokeStyle = '#111'; ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
   
   const startDraw = (e) => { e.preventDefault(); drawing = true; [lastX, lastY] = getPos(e); };
-  const moveDraw = (e) => { 
-      e.preventDefault(); 
-      if (!drawing) return; 
-      const [x, y] = getPos(e); 
-      ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y); ctx.stroke(); 
-      [lastX, lastY] = [x, y]; 
-  };
+  const moveDraw = (e) => { e.preventDefault(); if (!drawing) return; const [x, y] = getPos(e); ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y); ctx.stroke(); [lastX, lastY] = [x, y]; };
   const stopDraw = () => { drawing = false; };
 
-  // ลบ event เก่าออกก่อนป้องกันการทำงานซ้ำซ้อน
   canvas.replaceWith(canvas.cloneNode(true));
   const newCanvas = document.getElementById(canvasId);
-  
-  newCanvas.addEventListener('mousedown', startDraw);
-  newCanvas.addEventListener('mousemove', moveDraw);
-  newCanvas.addEventListener('mouseup', stopDraw);
-  newCanvas.addEventListener('mouseleave', stopDraw);
-  
-  // touch event ต้องใส่ {passive: false} เพื่อใช้ preventDefault() หยุดหน้าจอไม่ให้เลื่อนตอนเซ็น
-  newCanvas.addEventListener('touchstart', startDraw, {passive: false});
-  newCanvas.addEventListener('touchmove', moveDraw, {passive: false});
-  newCanvas.addEventListener('touchend', stopDraw);
+  newCanvas.addEventListener('mousedown', startDraw); newCanvas.addEventListener('mousemove', moveDraw); newCanvas.addEventListener('mouseup', stopDraw); newCanvas.addEventListener('mouseleave', stopDraw);
+  newCanvas.addEventListener('touchstart', startDraw, {passive: false}); newCanvas.addEventListener('touchmove', moveDraw, {passive: false}); newCanvas.addEventListener('touchend', stopDraw);
 }
 
 function clearSig(id) {
@@ -193,18 +206,15 @@ function getGPS() {
   }
 }
 
-// *** ฟังก์ชันจัดเรียงข้อมูลลงกระดาษ A4 ก่อนพิมพ์ (เวอร์ชันเต็มรูปแบบ) ***
 function prepareAndPrintPDF() {
   const getVal = (id) => document.getElementById(id) ? document.getElementById(id).value : "";
   const getRadioVal = (name) => { const el = document.querySelector(`input[name="${name}"]:checked`); return el ? el.value : ""; };
   
-  // อัปเดตข้อมูลลง Span (หน้า 1)
   document.getElementById('p-visit-no').textContent = getVal('f-visit-no');
   document.getElementById('p-visit-date').textContent = getVal('f-visit-date');
   document.getElementById('p-visit-time').textContent = getVal('f-visit-time');
   document.getElementById('p-teacher-1').textContent = getVal('f-teacher-1');
   document.getElementById('p-teacher-2').textContent = getVal('f-teacher-2');
-  
   document.getElementById('p-name').textContent = getVal('f-name');
   document.getElementById('p-class').textContent = getVal('f-class') + " เลขที่ " + getVal('f-no');
   document.getElementById('p-idcard').textContent = getVal('f-idcard');
@@ -218,25 +228,21 @@ function prepareAndPrintPDF() {
   document.getElementById('p-height').textContent = getVal('f-height');
   document.getElementById('p-blood').textContent = getVal('f-blood');
   document.getElementById('p-address').textContent = getVal('f-address');
-
   document.getElementById('p-father-name').textContent = getVal('f-father-name');
   document.getElementById('p-father-id').textContent = getVal('f-father-id');
   document.getElementById('p-father-age').textContent = getVal('f-father-age');
   document.getElementById('p-father-edu').textContent = getVal('f-father-edu');
   document.getElementById('p-father-phone').textContent = getVal('f-father-phone');
-
   document.getElementById('p-mother-name').textContent = getVal('f-mother-name');
   document.getElementById('p-mother-id').textContent = getVal('f-mother-id');
   document.getElementById('p-mother-age').textContent = getVal('f-mother-age');
   document.getElementById('p-mother-edu').textContent = getVal('f-mother-edu');
   document.getElementById('p-mother-phone').textContent = getVal('f-mother-phone');
-
   document.getElementById('p-guard-name').textContent = getVal('f-guard-name');
   document.getElementById('p-guard-rel').textContent = getVal('f-guard-rel');
   document.getElementById('p-guard-id').textContent = getVal('f-guard-id');
   document.getElementById('p-guard-age').textContent = getVal('f-guard-age');
   document.getElementById('p-guard-phone').textContent = getVal('f-guard-phone');
-
   document.getElementById('p-bro-older').textContent = getVal('f-bro-older');
   document.getElementById('p-sis-older').textContent = getVal('f-sis-older');
   document.getElementById('p-bro-young').textContent = getVal('f-bro-young');
@@ -244,7 +250,6 @@ function prepareAndPrintPDF() {
   document.getElementById('p-child-no').textContent = getVal('f-child-no');
   document.getElementById('p-sib-study').textContent = getVal('f-sib-study');
   document.getElementById('p-sib-work').textContent = getVal('f-sib-work');
-
   document.getElementById('p-house-members').textContent = getVal('f-house-members');
   document.getElementById('p-house-cond').textContent = getVal('f-house-cond');
   document.getElementById('p-house-atmos').textContent = getVal('f-house-atmos');
@@ -253,16 +258,12 @@ function prepareAndPrintPDF() {
   document.getElementById('p-hobby').textContent = getVal('f-hobby');
   document.getElementById('p-talent').textContent = getVal('f-talent');
   document.getElementById('p-parent-suggest').textContent = getVal('f-parent-suggest');
-
-  // อัปเดตข้อมูลลง Span (หน้า 2)
   document.getElementById('p-f-job').textContent = getVal('f-f-job');
   document.getElementById('p-f-pos').textContent = getVal('f-f-pos');
   document.getElementById('p-f-inc').textContent = getVal('f-f-inc');
-  
   document.getElementById('p-m-job').textContent = getVal('f-m-job');
   document.getElementById('p-m-pos').textContent = getVal('f-m-pos');
   document.getElementById('p-m-inc').textContent = getVal('f-m-inc');
-
   document.getElementById('p-sp-name').textContent = getVal('f-sp-name');
   document.getElementById('p-sp-rel').textContent = getVal('f-sp-rel');
   document.getElementById('p-sp-job').textContent = getVal('f-sp-job');
@@ -287,16 +288,13 @@ function prepareAndPrintPDF() {
 
   const parentStatusSelect = document.getElementById('s-parent-status');
   document.getElementById('p-parent-status').textContent = parentStatusSelect ? parentStatusSelect.value : "";
-  
   document.getElementById('p-house-type').textContent = getRadioVal('r_house_type');
   document.getElementById('p-space').textContent = getRadioVal('r_space');
   document.getElementById('p-private-rm').textContent = getRadioVal('r_private_rm');
   document.getElementById('p-safe').textContent = getRadioVal('r_safe');
-  
   document.getElementById('p-lat').textContent = getVal('f-lat');
   document.getElementById('p-lng').textContent = getVal('f-lng');
 
-  // ลายเซ็น
   const canvasG = document.getElementById('sig-guardian');
   const canvasT = document.getElementById('sig-teacher1');
   document.getElementById('print-sig-img-guardian').src = canvasG ? canvasG.toDataURL() : "";
@@ -306,6 +304,16 @@ function prepareAndPrintPDF() {
   document.getElementById('p-sig-name-guardian').textContent = gName;
   document.getElementById('p-sig-name-teacher').textContent = getVal('f-teacher-1') || ".........................................";
 
-  // สั่งพิมพ์
   window.print();
 }
+
+// ผูกฟังก์ชันข้ามไฟล์ป้องกัน Scope พัง
+window.toggleAddStudentForm = toggleAddStudentForm;
+window.submitNewStudent = submitNewStudent;
+window.openVisitForm = openVisitForm;
+window.goToStep = goToStep;
+window.nextStep = nextStep;
+window.prevStep = prevStep;
+window.clearSig = clearSig;
+window.getGPS = getGPS;
+window.prepareAndPrintPDF = prepareAndPrintPDF;

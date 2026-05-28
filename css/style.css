@@ -173,38 +173,51 @@ body { font-family: 'Sarabun', sans-serif; background: #f8f9fa; }
 ========================================= */
 #print-template { display: none; }
 
+/* =========================================
+   ระบบพิมพ์ PDF (Print Template)
+========================================= */
+#print-template { display: none; }
+
 @media print {
+  /* ซ่อนอินเทอร์เฟซแอปพลิเคชันทั้งหมด */
   #app, .toast { display: none !important; }
   
+  /* เปิดหน้าเทมเพลตพิมพ์กระดาษ A4 */
   #print-template { 
-    display: block; 
-    font-family: 'Sarabun', sans-serif; 
-    color: #000;
+    display: block !important; 
+    font-family: 'Sarabun', sans-serif !important; 
+    color: #000 !important;
     line-height: 1.6;
-    font-size: 12px; /* ขนาดตัวอักษรสำหรับกระดาษ A4 */
+    font-size: 13px;
     padding: 0;
+  }
+  
+  /* บังคับให้ตัวหนังสือและองค์ประกอบทุกชิ้นในหน้าพิมพ์ไม่ใช่ตัวหนา */
+  #print-template * {
+    font-family: 'Sarabun', sans-serif !important;
+    font-weight: normal !important; /* ปลดล็อกตัวหนาออกทั้งหมด */
   }
   
   @page { size: A4; margin: 1cm 1.5cm; }
   body { background: white; margin: 0; -webkit-print-color-adjust: exact; }
   
   .print-header { text-align: center; margin-bottom: 15px; }
-  .print-header h2 { font-size: 16px; margin-bottom: 5px; font-weight: bold; }
+  .print-header h2 { font-size: 16px; margin-bottom: 5px; }
   
   .print-row { display: flex; flex-wrap: wrap; align-items: baseline; margin-bottom: 5px; width: 100%; }
-  .print-label { font-weight: 600; margin-right: 5px; white-space: nowrap; }
+  .print-label { margin-right: 5px; white-space: nowrap; }
   .print-val { 
     border-bottom: 1px dotted #000; 
     padding: 0 5px; 
     color: #111; 
-    flex: 1; /* ยืดเส้นไข่ปลาให้เต็มบรรทัดอัตโนมัติ */
+    flex: 1; 
     min-width: 30px;
     display: inline-block;
   }
   .print-val.short { flex: none; width: auto; min-width: 60px; text-align: center; }
   
-  .print-section-title { font-weight: bold; font-size: 14px; margin-top: 12px; margin-bottom: 5px; }
-  .page-break { page-break-before: always; } /* บังคับขึ้นหน้าใหม่ */
+  .print-section-title { font-size: 14px; margin-top: 12px; margin-bottom: 5px; border-bottom: 1px solid #000; padding-bottom: 2px; }
+  .page-break { page-break-before: always; }
   
   .print-sig-row { display: flex; justify-content: space-around; margin-top: 30px; text-align: center; }
   .print-sig-box { width: 45%; }
