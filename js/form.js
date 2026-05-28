@@ -1,23 +1,41 @@
-// ประกาศตัวแปรควบคุมสากลเพื่อแก้ปัญหา ReferenceError เจาะจงสำหรับระบบ Multi-step
+// ตัวแปรควบคุมสากลระบบ Multi-step
 let currentStep = 1;
 const totalSteps = 4;
 
 window.goToStep = function(n) {
   currentStep = n;
-  ['1','2','3','4'].forEach(s => { document.getElementById('form-step-' + s).classList.toggle('hidden', s !== String(n)); });
+  
+  // สลับการซ่อน/แสดงผลแต่ละ Step
+  ['1','2','3','4'].forEach(s => { 
+    document.getElementById('form-step-' + s).classList.toggle('hidden', s !== String(n)); 
+  });
+  
+  // อัปเดตตัวเลขและสถานะวงกลมแถบ Step Indicatorด้านบน
   document.getElementById('step-num').textContent = n;
   document.querySelectorAll('[id^="step-dot-"]').forEach((dot, i) => {
     dot.classList.remove('active', 'done');
     if (i + 1 < n) dot.classList.add('done');
     else if (i + 1 === n) dot.classList.add('active');
   });
+  
+  // จัดการเปิด/ปิดปุ่มย้อนกลับและข้อความปุ่มถัดไป
   document.getElementById('btn-prev').style.display = n > 1 ? 'flex' : 'none';
   document.getElementById('btn-next').textContent = n === 4 ? 'บันทึกข้อมูลเข้าสู่ระบบ' : 'ถัดไป';
   
+  // เรียกเปิดใช้งาน Canvas ระบบลายเซ็นอิเล็กทรอนิกส์ในขั้นตอนสุดท้าย
   if (n === 4) { 
     setTimeout(() => { window.initCanvas('sig-guardian'); window.initCanvas('sig-teacher1'); }, 300); 
   }
-  document.querySelector('#page-form').scrollTop = 0;
+
+  // ===================================================
+  // [จุดที่แก้ไขเพิ่มเติม] สั่งให้เด้งกลับไปบนสุดทันที ไม่ต้องเลื่อนนิ้วเอง
+  // ===================================================
+  const mainContainer = document.getElementById('main');
+  if (mainContainer) {
+    mainContainer.scrollTop = 0; // รีเซ็ตกล่องเนื้อหาตรงกลางกลับไปบนสุด
+  }
+  window.scrollTo(0, 0); // รีเซ็ตหน้าต่างเบราว์เซอร์หลักกลับไปบนสุด (สำหรับมือถือบางรุ่น)
+  // ===================================================
 };
 
 window.initCanvas = function(canvasId) {
@@ -110,6 +128,11 @@ window.submitVisitData = () => {
     action: "save_visit", studentId: currentStudentId || "ไม่ระบุ",
     teacherName: document.getElementById('f-teacher-1').value,
     step1: { 
+      visitNo: document.getElementById('f-visit-no').value,
+      visitDate: document.getElementById('f-visit-date').value,
+      visitTime: document.getElementById('f-visit-time').value,
+      teacher1: document.getElementById('f-teacher-1').value,
+      teacher2: document.getElementById('f-teacher-2').value,
       name: document.getElementById('f-name').value, class: document.getElementById('f-class').value, 
       no: document.getElementById('f-no').value, idcard: document.getElementById('f-idcard').value,
       gpa: document.getElementById('f-gpa').value, likeSub: document.getElementById('f-like-sub').value,
