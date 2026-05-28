@@ -101,7 +101,7 @@ body { font-family: 'Sarabun', sans-serif; background: #f4f6f8; color: var(--gra
 .visit-btn.done { background: var(--gray200); color: var(--gray600); }
 
 .filter-bar { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
-.filter-chip { padding: 6px 14px; border: 1px solid var(--gray300); border-radius: 20px; font-size: 13px; cursor: pointer; background: white; font-family: inherit; color: var(--gray700); }
+.filter-chip { padding: 6px 14px; border: 1px solid var(--gray400); border-radius: 20px; font-size: 13px; cursor: pointer; background: white; font-family: inherit; color: var(--gray700); }
 .filter-chip.active { background: var(--primary); color: white; border-color: var(--primary); font-weight: 500; }
 
 /* Form Components */
@@ -127,7 +127,18 @@ body { font-family: 'Sarabun', sans-serif; background: #f4f6f8; color: var(--gra
 .form-row.full { grid-template-columns: 1fr; }
 .form-group { display: flex; flex-direction: column; gap: 4px; }
 .form-group label { font-size: 13px; color: var(--gray700); font-weight: 500; }
-.form-group input, .form-group select, .form-group textarea { border: 1px solid var(--gray300); border-radius: 8px; padding: 10px; font-size: 14px; font-family: inherit; background: white; color: var(--gray900); width: 100%; }
+
+/* แก้ไขจุดนี้: ใส่สีกรอบข้อความเข้มเด่นชัดเจน ป้องกันพื้นหลังขาวกลืนหาย */
+.form-group input, .form-group select, .form-group textarea { 
+  border: 1px solid #bcbcbc !important; 
+  border-radius: 8px; 
+  padding: 10px; 
+  font-size: 14px; 
+  font-family: inherit; 
+  background: white; 
+  color: var(--gray900); 
+  width: 100%; 
+}
 .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
 
 .check-row { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 4px; }
@@ -137,7 +148,7 @@ body { font-family: 'Sarabun', sans-serif; background: #f4f6f8; color: var(--gra
 .gps-btn { display: flex; align-items: center; gap: 8px; padding: 12px; background: var(--blue-light); color: var(--blue); border: 1px solid #90caf9; border-radius: 8px; cursor: pointer; font-size: 14px; width: 100%; justify-content: center; font-family: inherit; font-weight: 500; }
 .gps-btn:active { background: #d0e4fc; }
 
-.sig-wrap { border: 1px solid var(--gray300); border-radius: 8px; overflow: hidden; background: #fafafa; position: relative; width: 100%; margin-top: 6px; }
+.sig-wrap { border: 1px solid var(--gray400); border-radius: 8px; overflow: hidden; background: #fafafa; position: relative; width: 100%; margin-top: 6px; }
 .sig-canvas { display: block; width: 100%; height: 120px; cursor: crosshair; touch-action: none; }
 .sig-clear { position: absolute; top: 6px; right: 6px; padding: 4px 10px; font-size: 12px; background: white; border: 1px solid var(--gray300); border-radius: 6px; cursor: pointer; font-family: inherit; }
 .sig-label-overlay { position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); font-size: 11px; color: var(--gray400); pointer-events: none; }
@@ -153,49 +164,22 @@ body { font-family: 'Sarabun', sans-serif; background: #f4f6f8; color: var(--gra
 
 .hidden { display: none !important; }
 
-/* =========================================
-   ระบบพิมพ์ PDF (Print Template)
-========================================= */
+/* สไตล์งานพิมพ์ PDF */
 #print-template { display: none; }
-
 @media print {
   #app, .toast { display: none !important; }
-  
-  #print-template { 
-    display: block !important; 
-    font-family: 'Sarabun', sans-serif !important; 
-    color: #000 !important;
-    line-height: 1.6;
-    font-size: 13px;
-    padding: 0;
-  }
-  
-  #print-template * {
-    font-family: 'Sarabun', sans-serif !important;
-    font-weight: normal !important; 
-  }
-  
+  #print-template { display: block !important; font-family: 'Sarabun', sans-serif !important; color: #000 !important; line-height: 1.6; font-size: 13px; padding: 0; }
+  #print-template * { font-family: 'Sarabun', sans-serif !important; font-weight: normal !important; }
   @page { size: A4; margin: 1cm 1.5cm; }
   body { background: white; margin: 0; -webkit-print-color-adjust: exact; }
-  
   .print-header { text-align: center; margin-bottom: 15px; }
   .print-header h2 { font-size: 16px; margin-bottom: 5px; }
-  
   .print-row { display: flex; flex-wrap: wrap; align-items: baseline; margin-bottom: 5px; width: 100%; }
   .print-label { margin-right: 5px; white-space: nowrap; }
-  .print-val { 
-    border-bottom: 1px dotted #000; 
-    padding: 0 5px; 
-    color: #111; 
-    flex: 1; 
-    min-width: 30px;
-    display: inline-block;
-  }
+  .print-val { border-bottom: 1px dotted #000; padding: 0 5px; color: #111; flex: 1; min-width: 30px; display: inline-block; }
   .print-val.short { flex: none; width: auto; min-width: 60px; text-align: center; }
-  
   .print-section-title { font-size: 14px; margin-top: 12px; margin-bottom: 5px; border-bottom: 1px solid #000; padding-bottom: 2px; }
   .page-break { page-break-before: always; }
-  
   .print-sig-row { display: flex; justify-content: space-around; margin-top: 30px; text-align: center; }
   .print-sig-box { width: 45%; }
   .print-sig-img { height: 40px; display: block; margin: 0 auto 5px; object-fit: contain; }
