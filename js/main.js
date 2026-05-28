@@ -4,7 +4,21 @@ let students = [];
 let teacherStudents = [];
 let currentStudentId = null;
 
+// แก้ปัญหา พ.ศ. ปีการศึกษาอัตโนมัติเมื่อเปิดหน้าเว็บ
 window.onload = () => {
+  const now = new Date();
+  let currentBE = now.getFullYear() + 543;
+  
+  // กฎปฏิทินการศึกษาไทย: ม.ค. (0) ถึง เม.ย. (3) ถือเป็นปลายปีการศึกษาเก่า
+  if (now.getMonth() < 4) {
+    currentBE--;
+  }
+  
+  const yearEl = document.getElementById('current-academic-year');
+  if (yearEl) {
+    yearEl.textContent = currentBE;
+  }
+
   fetchStudentsData();
 };
 
