@@ -1,66 +1,90 @@
-// ตัวแปรควบคุมสากลระบบ Multi-step
 let currentStep = 1;
 const totalSteps = 4;
 
 window.goToStep = function(n) {
   currentStep = n;
-  
-  // สลับการซ่อน/แสดงผลแต่ละ Step
-  ['1','2','3','4'].forEach(s => { 
-    document.getElementById('form-step-' + s).classList.toggle('hidden', s !== String(n)); 
-  });
-  
-  // อัปเดตตัวเลขและสถานะวงกลมแถบ Step Indicatorด้านบน
+  ['1','2','3','4'].forEach(s => { document.getElementById('form-step-' + s).classList.toggle('hidden', s !== String(n)); });
   document.getElementById('step-num').textContent = n;
   document.querySelectorAll('[id^="step-dot-"]').forEach((dot, i) => {
     dot.classList.remove('active', 'done');
     if (i + 1 < n) dot.classList.add('done');
     else if (i + 1 === n) dot.classList.add('active');
   });
-  
-  // จัดการเปิด/ปิดปุ่มย้อนกลับและข้อความปุ่มถัดไป
   document.getElementById('btn-prev').style.display = n > 1 ? 'flex' : 'none';
   document.getElementById('btn-next').textContent = n === 4 ? 'บันทึกข้อมูลเข้าสู่ระบบ' : 'ถัดไป';
   
-  // เรียกเปิดใช้งาน Canvas ระบบลายเซ็นอิเล็กทรอนิกส์ในขั้นตอนสุดท้าย
   if (n === 4) { 
     setTimeout(() => { window.initCanvas('sig-guardian'); window.initCanvas('sig-teacher1'); }, 300); 
   }
-
-  // ===================================================
-  // [จุดที่แก้ไขเพิ่มเติม] สั่งให้เด้งกลับไปบนสุดทันที ไม่ต้องเลื่อนนิ้วเอง
-  // ===================================================
+  
+  // บังคับเด้งขึ้นบนสุดอัตโนมัติทั้งกล่องเนื้อหาหลักและวินโดว์หน้าจอ
   const mainContainer = document.getElementById('main');
-  if (mainContainer) {
-    mainContainer.scrollTop = 0; // รีเซ็ตกล่องเนื้อหาตรงกลางกลับไปบนสุด
-  }
-  window.scrollTo(0, 0); // รีเซ็ตหน้าต่างเบราว์เซอร์หลักกลับไปบนสุด (สำหรับมือถือบางรุ่น)
-  // ===================================================
+  if (mainContainer) { mainContainer.scrollTop = 0; }
+  window.scrollTo(0, 0);
 };
 
+// *** [แก้ไขระบบลายเซ็น iPad/Mobile] *** ใช้ระบบ PointerEvents แบบมาตรฐานอุตสาหกรรม ลื่นแน่นอน
 window.initCanvas = function(canvasId) {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return;
-  canvas.width = canvas.parentElement.offsetWidth || 300;
+  
+  const parentWidth = canvas.parentElement.clientWidth;
+  canvas.width = parentWidth > 0 ? parentWidth : 350;
   canvas.height = 120;
+  
   const ctx = canvas.getContext('2d');
-  let drawing = false; let lastX = 0, lastY = 0;
+  ctx.strokeStyle = '#000000'; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
   
-  function getPos(e) {
-    const r = canvas.getBoundingClientRect();
-    if (e.touches && e.touches.length > 0) return [e.touches[0].clientX - r.left, e.touches[0].clientY - r.top];
-    return [e.clientX - r.left, e.clientY - r.top];
+  let isDrawing = false; let lastX = 0; let lastY = 0;
+  
+  function getCoordinates(e) {
+    const rect = canvas.getBoundingClientRect();
+    return [
+      (e.clientX - rect.left) * (canvas.width / rect.width),
+      (e.clientY - rect.top) * (canvas.height / rect.height)
+    ];
   }
-  ctx.strokeStyle = '#111'; ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
   
-  const startDraw = (e) => { e.preventDefault(); drawing = true; [lastX, lastY] = getPos(e); };
-  const moveDraw = (e) => { e.preventDefault(); if (!drawing) return; const [x, y] = getPos(e); ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y); ctx.stroke(); [lastX, lastY] = [x, y]; };
-  const stopDraw = () => { drawing = false; };
+  canvas.onpointerdown = function(e) {
+    canvas.setPointerCapture(e.pointerId);
+    isDrawing = true;
+    [lastX, lastY] = getCoordinates(e);
+  };
+  
+  canvas.onpointermove = function(e) {
+    if (!isDrawing) return;
+    const [x, y] = getCoordinates(e);
+    ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y); ctx.stroke();
+    [lastX, lastY] = [x, y];
+  };
+  
+  canvas.onpointerup = canvas.onpointercancel = function(e) {
+    try { canvas.releasePointerCapture(e.pointerId); } catch(err){}
+    isDrawing = false;
+  };
+};
 
-  canvas.replaceWith(canvas.cloneNode(true));
-  const newCanvas = document.getElementById(canvasId);
-  newCanvas.addEventListener('mousedown', startDraw); newCanvas.addEventListener('mousemove', moveDraw); newCanvas.addEventListener('mouseup', stopDraw); newCanvas.addEventListener('mouseleave', stopDraw);
-  newCanvas.addEventListener('touchstart', startDraw, {passive: false}); newCanvas.addEventListener('touchmove', moveDraw, {passive: false}); newCanvas.addEventListener('touchend', stopDraw);
+// *** [ฟีเจอร์ว้าว 1] ระบบพิมพ์ด้วยเสียงอัจฉริยะ (Voice-to-Text) ผ่าน Web Speech API ***
+window.startSpeechRecognition = function(inputId) {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    window.showToast("❌ อุปกรณ์หรือเบราว์เซอร์นี้ไม่รองรับระบบพิมพ์ด้วยเสียง");
+    return;
+  }
+  const recognition = new SpeechRecognition();
+  recognition.lang = 'th-TH'; recognition.interimResults = false; recognition.maxAlternatives = 1;
+  window.showToast("🎙️ กำลังฟังเสียง... พูดได้เลยครับครู");
+  
+  recognition.onresult = function(event) {
+    const text = event.results[0][0].transcript;
+    const inputEl = document.getElementById(inputId);
+    if (inputEl) {
+      inputEl.value = inputEl.value ? inputEl.value + " " + text : text;
+    }
+    window.showToast("✓ พิมพ์ด้วยเสียงสำเร็จ!");
+  };
+  recognition.onerror = () => window.showToast("❌ เกิดข้อผิดพลาดในการรับเสียง");
+  recognition.start();
 };
 
 window.toggleAddStudentForm = () => { document.getElementById('add-student-form').classList.toggle('hidden'); };
@@ -96,11 +120,47 @@ window.openVisitForm = (id, name, cls, no, gpa) => {
   document.getElementById('f-name').value = name; document.getElementById('f-class').value = cls;
   document.getElementById('f-no').value = no; document.getElementById('f-gpa').value = gpa;
   
+  // รีเซ็ตค่าช่องลายเซ็นบรรจงและค่าฟอร์มอื่นๆ เป็นค่าว่างก่อนล้างค่าเก่า
   document.getElementById('f-sig-name-guard-input').value = "";
   document.getElementById('f-sig-name-teacher-input').value = document.getElementById('f-teacher-1').value || "";
   
+  // *** [ฟีเจอร์ว้าว 2] ระบบจำประวัติเดิมอัจฉริยะ (Smart Auto-Fill) ดึงข้อมูลจากการเยี่ยมครั้งก่อนมาใส่ให้ทันที ***
+  if (window.rawVisits && window.rawVisits.length > 0) {
+    const pastVisits = window.rawVisits.filter(v => String(v.Student_ID) === String(id));
+    if (pastVisits.length > 0) {
+      const latestPastVisit = pastVisits[pastVisits.length - 1]; // เอาประวัติล่าสุดที่เคยบันทึกมาใช้ตั้งต้น
+      try {
+        const s1 = JSON.parse(latestPastVisit.Step1_Basic);
+        if(s1.idcard) document.getElementById('f-idcard').value = s1.idcard;
+        if(s1.likeSub) document.getElementById('f-like-sub').value = s1.likeSub;
+        if(s1.dislikeSub) document.getElementById('f-dislike-sub').value = s1.dislikeSub;
+        if(s1.dob) document.getElementById('f-dob').value = s1.dob;
+        if(s1.blood) document.getElementById('f-blood').value = s1.blood;
+        if(s1.address) document.getElementById('f-address').value = s1.address;
+        if(s1.fatherName) document.getElementById('f-father-name').value = s1.fatherName;
+        if(s1.fatherId) document.getElementById('f-father-id').value = s1.fatherId;
+        if(s1.fatherAge) document.getElementById('f-father-age').value = s1.fatherAge;
+        if(s1.fatherEdu) document.getElementById('f-father-edu').value = s1.fatherEdu;
+        if(s1.fatherPhone) document.getElementById('f-father-phone').value = s1.fatherPhone;
+        if(s1.motherName) document.getElementById('f-mother-name').value = s1.motherName;
+        if(s1.motherId) document.getElementById('f-mother-id').value = s1.motherId;
+        if(s1.motherAge) document.getElementById('f-mother-age').value = s1.motherAge;
+        if(s1.motherEdu) document.getElementById('f-mother-edu').value = s1.motherEdu;
+        if(s1.motherPhone) document.getElementById('f-mother-phone').value = s1.motherPhone;
+        if(s1.guardName) document.getElementById('f-guard-name').value = s1.guardName;
+        if(s1.guardRel) document.getElementById('f-guard-rel').value = s1.guardRel;
+        if(s1.guardId) document.getElementById('f-guard-id').value = s1.guardId;
+        if(s1.guardAge) document.getElementById('f-guard-age').value = s1.guardAge;
+        if(s1.guardPhone) document.getElementById('f-guard-phone').value = s1.guardPhone;
+        window.showToast("🧠 ดึงประวัติฐานข้อมูลเดิมของนักเรียนใส่ฟอร์มให้อัตโนมัติ!");
+      } catch(err){}
+    }
+  }
+
+  // ผูกรอบครั้งที่ให้สอดคล้องกับคอมโบ้บ็อกซ์ที่เลือกหน้าแรกโดยอัตโนมัติ
+  if(document.getElementById('f-visit-no')) { document.getElementById('f-visit-no').value = selectedRound; }
+
   window.showTab('form');
-  window.showToast(`เริ่มบันทึก: ${name}`);
 };
 
 window.nextStep = () => { if (currentStep < totalSteps) window.goToStep(currentStep + 1); else window.submitVisitData(); };
