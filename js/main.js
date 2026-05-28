@@ -1,8 +1,8 @@
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwn26krRKHqpeLnc6dVFgM3XR3J6pPyRCBvLodDWOJjwSdCPnjqg4BFlSvM80ACSwfprQ/exec"; 
 let currentRole = 'admin';
-let selectedRound = 1; // ตัวแปรรอบการเยี่ยมเริ่มต้นเริ่มต้นที่ครั้งที่ 1
-let rawStudents = [];
-let rawVisits = [];
+let selectedRound = 1; 
+window.rawStudents = [];
+window.rawVisits = [];
 let students = [];
 let teacherStudents = [];
 let currentStudentId = null;
@@ -18,18 +18,16 @@ window.onload = () => {
 };
 
 async function fetchStudentsData() {
-  showToast('กำลังโหลดข้อมูลคลาวด์...'); 
+  window.showToast('กำลังโหลดข้อมูลคลาวด์...'); 
   try {
     const response = await fetch(WEB_APP_URL);
     const result = await response.json();
     if (result.status === "success") {
-      rawStudents = result.students || [];
-      rawVisits = result.visits || [];
+      window.rawStudents = result.students || [];
+      window.rawVisits = result.visits || [];
       
-      // คำนวณจับคู่ข้อมูลตามรอบประวัติจริง
       processStudentStatus();
       
-      // สร้างปุ่มกรอง Dynamic
       const uniqueClasses = [...new Set(students.map(s => {
           if(!s.class) return "";
           return s.class.split('/')[0].trim(); 
@@ -45,20 +43,18 @@ async function fetchStudentsData() {
                          <button class="filter-chip" onclick="filterClass('unvisited', this)">ยังไม่เยี่ยม</button>`;
           filterBar.innerHTML = filterHTML;
       }
-      showToast('โหลดข้อมูลสำเร็จ!');
+      window.showToast('โหลดข้อมูลสำเร็จ!');
     }
   } catch (error) {
-    showToast('❌ การเชื่อมต่อฐานข้อมูลล้มเหลว');
+    window.showToast('❌ การเชื่อมต่อฐานข้อมูลล้มเหลว');
   }
 }
 
-// ฟังก์ชันสำคัญ: แปลงสถานะ เยี่ยมแล้ว ตามรอบที่เลือกแบบ Dynamic
 function processStudentStatus() {
-  students = rawStudents.map((s, index) => {
+  students = window.rawStudents.map((s, index) => {
     const avatars = ['avatar-blue', 'avatar-green', 'avatar-purple', 'avatar-orange'];
     
-    // ตรวจสอบข้อมูลในแท็บ Visits ว่าเด็กคนนี้เคยถูกบันทึกใน ครั้งที่ ตรงกับที่เลือกไว้ไหม
-    const isVisited = rawVisits.some(v => {
+    const isVisited = window.rawVisits.some(v => {
       if (String(v.Student_ID) !== String(s.id)) return false;
       try {
         const step1 = JSON.parse(v.Step1_Basic);
@@ -72,7 +68,7 @@ function processStudentStatus() {
       class: s.class || s.Class,
       no: s.no || s.Number,
       gpa: s.gpa || s.GPA,
-      visited: isVisited, // สถานะเปลี่ยนไปตามตัวแปรรอบการเลือก
+      visited: isVisited, 
       risk: s.risk === true || s.risk === "TRUE" || s.risk === 1,
       avatar: avatars[index % 4]
     };
@@ -84,17 +80,12 @@ function processStudentStatus() {
   renderTeacherList();
 }
 
-// ฟังก์ชันเมื่อเปลี่ยนรอบครั้งที่ 1, 2, 3 ในคอมโบ้บ็อกซ์หน้าจอ
 window.changeVisitRound = function(roundVal) {
   selectedRound = parseInt(roundVal);
-  
-  // บังคับเปลี่ยนตัวเลขใน Input ฟอร์มครั้งที่ อัตโนมัติ ครูจะได้ไม่ต้องพิมพ์ใหม่
   const formVisitNoInput = document.getElementById('f-visit-no');
   if(formVisitNoInput) { formVisitNoInput.value = selectedRound; }
-  
-  // ประมวลผลสถานะนักเรียนชุดใหม่ทันที
   processStudentStatus();
-  showToast(`สลับข้อมูลเป็น: ครั้งที่ ${selectedRound}`);
+  window.showToast(`สลับข้อมูลเป็น: ครั้งที่ ${selectedRound}`);
 };
 
 function updateDashboardStats() {
@@ -200,23 +191,3 @@ function filterClass(cls, el) {
   else list = students.filter(s => s.class.startsWith(cls));
   renderStudentList(list);
 }
-
-window.showTab = (tab) => {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.header-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('page-' + tab).classList.add('active');
-  const tabEl = document.querySelector(`[data-tab="${tab}"]`);
-  if (tabEl) tabEl.classList.add('active');
-  if (tab === 'form') window.goToStep(1);
-};
-
-window.setRole = (role) => {
-  currentRole = role;
-  document.querySelectorAll('.role-btn').forEach((b,i) => { b.classList.toggle('active', (i === 0 && role === 'admin') || (i === 1 && role === 'teacher')); });
-  document.getElementById('admin-dash').classList.toggle('hidden', role === 'teacher');
-  document.getElementById('teacher-dash').classList.toggle('hidden', role === 'admin');
-};
-
-window.filterClass = filterClass;
-window.searchStudents = (q) => { renderStudentList(q ? students.filter(s => s.name.includes(q)) : students); };
-window.showToast = (msg) => { const t = document.getElementById('toast'); if(!t) return; t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); };
