@@ -1,18 +1,20 @@
-// ประกาศตัวแปร Global
+// ประกาศตัวแปรควบคุมระบบ Global สากล
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwn26krRKHqpeLnc6dVFgM3XR3J6pPyRCBvLodDWOJjwSdCPnjqg4BFlSvM80ACSwfprQ/exec"; 
+let currentBE = 2569;
 let currentRole = 'admin';
 let selectedRound = 1; 
 window.rawStudents = [];
 window.rawVisits = [];
+window.rawTeachers = [];
 let students = [];
 let teacherStudents = [];
 let currentStudentId = null;
 
-// ระบุปีการศึกษาไทยปัจจุบันอัตโนมัติ
+// สั่งคำนวณปี พ.ศ. การศึกษาไทยอัตโนมัติเมื่อเริ่มเปิดเว็บหน้างาน
 window.onload = function() {
   const now = new Date();
-  let currentBE = now.getFullYear() + 543;
-  if (now.getMonth() < 4) { currentBE--; }
+  currentBE = now.getFullYear() + 543;
+  if (now.getMonth() < 4) { currentBE--; } // ปฏิทินโรงเรียน: ม.ค. ถึง เม.ย. นับเป็นเทอมปลายปีเก่า
   const yearEl = document.getElementById('current-academic-year');
   if (yearEl) { yearEl.textContent = currentBE; }
 
@@ -36,6 +38,10 @@ function showTab(tab) {
   
   const tabEl = document.querySelector(`[data-tab="${tab}"]`);
   if (tabEl) tabEl.classList.add('active');
+  
+  if (tab === 'students') {
+    closeStudentDetail(); // ดีดหน้าต่างดีเทลกลับสู่โหมดรายชื่อเมื่อคลิกแท็บ
+  }
   if (tab === 'form') window.goToStep(1);
 }
 
@@ -54,7 +60,9 @@ async function fetchStudentsData() {
     if (result.status === "success") {
       window.rawStudents = result.students || [];
       window.rawVisits = result.visits || [];
+      window.rawTeachers = result.teachers || [];
       
+      renderTeacherDropdown();
       processStudentStatus();
       
       const uniqueClasses = [...new Set(students.map(s => {
@@ -77,6 +85,14 @@ async function fetchStudentsData() {
   } catch (error) {
     showToast('❌ การเชื่อมต่อฐานข้อมูลล้มเหลว');
   }
+}
+
+function renderTeacherDropdown() {
+  const dropdown = document.getElementById('f-teacher-1');
+  if (!dropdown) return;
+  let html = '<option value="">-- กรุณาเลือกรายชื่อครู --</option>';
+  window.rawTeachers.forEach(t => { html += `<option value="${t.name}">${t.name}</option>`; });
+  dropdown.innerHTML = html;
 }
 
 function processStudentStatus() {
@@ -171,33 +187,97 @@ function updateDashboardStats() {
       });
       gridContainer.innerHTML = gridHTML;
   }
+
+  // คำนวณแผงกลุ่มเสี่ยงด้านล่างสุด Dynamic อัจฉริยะ (ตามรูปภาพต้นแบบสเปกครู)
+  let countFinanceRisk = 0; let countSafetyRisk = 0; let countFamilyRisk = 0;
+  const financeRooms = {};
+
+  window.rawStudents.forEach(s => {
+    const studentVisits = window.rawVisits.filter(v => String(v.Student_ID) === String(s.id));
+    if (studentVisits.length === 0) return;
+    const latestVisit = studentVisits[studentVisits.length - 1];
+    let v2 = {};
+    try { v2 = JSON.parse(latestVisit.Step2_Economy); } catch(e){}
+
+    if (v2.helpNeeds && v2.helpNeeds.includes("ทุนการศึกษา")) {
+      countFinanceRisk++;
+      if (s.class) { financeRooms[s.class] = (financeRooms[s.class] || 0) + 1; }
+    }
+    if (latestVisit.Step2_Economy && (latestVisit.Step2_Economy.includes("ไม่ปลอดภัย") || latestVisit.Step2_Economy.includes("มีจุดเสี่ยง"))) { countSafetyRisk++; }
+    if (latestVisit.Step2_Economy && (latestVisit.Step2_Economy.includes("หย่าร้าง") || latestVisit.Step2_Economy.includes("แยกกันอยู่"))) { countFamilyRisk++; }
+  });
+
+  const roomBreakdownText = Object.keys(financeRooms).sort().map(rm => `${rm} (${financeRooms[rm]} คน)`).join(', ');
+
+  const riskPanelContainer = document.getElementById('dynamic-risk-panel');
+  if (riskPanelContainer) {
+    riskPanelContainer.innerHTML = `
+      <div class="risk-panel-card">
+        <h4><i class="ti ti-coin-off"></i> ฐานะยากจน / รายได้ต่ำ — ${countFinanceRisk} คน</h4>
+        <p>${roomBreakdownText ? roomBreakdownText + ' — ' : ''}ต้องการทุนการศึกษาเร่งด่วน</p>
+      </div>
+      <div class="risk-panel-card">
+        <h4><i class="ti ti-home-off"></i> สภาพบ้านไม่ปลอดภัย — ${countSafetyRisk} คน</h4>
+        <p>พบว่าสภาพแวดล้อมรอบบ้านมีความเสี่ยง ต้องการการติดตามอย่างต่อเนื่อง</p>
+      </div>
+      <div class="risk-panel-card">
+        <h4><i class="ti ti-users-minus"></i> ครอบครัวแตกแยก / ผู้ปกครองไม่ใช่บิดามารดา — ${countFamilyRisk} คน</h4>
+        <p>อาศัยอยู่กับปู่ย่าตายาย หรือญาติ — ควรประสานงานแนะแนวเพิ่มเติมเพื่อดูแลอย่างใกล้ชิด</p>
+      </div>`;
+  }
 }
 
 function renderStudentList(list) {
   const container = document.getElementById('student-list');
-  container.innerHTML = list.map(s => `
-    <div class="student-item" style="cursor: pointer;" onclick="openVisitForm('${s.id}', '${s.name}', '${s.class}', '${s.no}', '${s.gpa}')">
-      <div class="student-avatar ${s.avatar}">${(s.name || '?').charAt(0)}</div>
-      <div class="student-info">
-        <div class="student-name">${s.name} ${s.risk ? '<span class="badge badge-red">⚠ เสี่ยง</span>' : ''}</div>
-        <div class="student-meta"><span>${s.class} เลขที่ ${s.no}</span></div>
+  if(!container) return;
+  
+  container.innerHTML = list.map(s => {
+    const gpaPercent = s.gpa ? (parseFloat(s.gpa) / 4.0) * 100 : 0;
+    return `
+    <div class="student-item-row" onclick="viewStudentDetail('${s.id}')" style="cursor:pointer;">
+      <div style="display:flex; align-items:center; gap:10px; min-width:0;">
+        <div class="student-avatar ${s.avatar}" style="width:32px; height:32px; font-size:13px;">${s.no}</div>
+        <div class="student-name" style="font-size:13.5px;">${s.name}</div>
       </div>
-      <button type="button" class="visit-btn ${s.visited ? 'done' : ''}" onclick="event.stopPropagation(); openVisitForm('${s.id}', '${s.name}', '${s.class}', '${s.no}', '${s.gpa}')">
-        ${s.visited ? 'เยี่ยมแล้ว' : 'บันทึก'}
-      </button>
-    </div>`).join('');
+      <div style="padding: 0 10px;">
+        <div style="font-size:12px; font-weight:500; color:var(--gray800); text-align:center;">${parseFloat(s.gpa).toFixed(2)}</div>
+        <div class="gpa-track-bar" style="margin-top:2px; height:5px;"><div class="gpa-track-fill" style="width:${gpaPercent}%;"></div></div>
+      </div>
+      <div style="text-align:center;"><span class="badge ${s.visited ? 'badge-green' : 'badge-gray'}">${s.visited ? 'เยี่ยมแล้ว' : 'ยังไม่เยี่ยม'}</span></div>
+      <div style="text-align:center;">${s.risk ? '<span class="badge badge-red">เสี่ยง</span>' : '<span style="color:var(--gray400); font-size:12px;">-</span>'}</div>
+      <div style="text-align:right;">
+        <button type="button" class="visit-btn ${s.visited ? 'done' : ''}" style="padding:5px 12px; font-size:12px;" onclick="event.stopPropagation(); viewStudentDetail('${s.id}')">
+          ${s.visited ? 'ดูข้อมูล' : 'บันทึก'}
+        </button>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function renderTeacherList() {
   const container = document.getElementById('teacher-student-list');
-  container.innerHTML = teacherStudents.map(s => `
-    <div class="student-item" style="cursor: pointer;" onclick="openVisitForm('${s.id}', '${s.name}', '${s.class}', '${s.no}', '${s.gpa}')">
-      <div class="student-avatar ${s.avatar}">${(s.name || '?').charAt(0)}</div>
-      <div class="student-info"><div class="student-name">${s.name}</div></div>
-      <button type="button" class="visit-btn ${s.visited ? 'done' : ''}" onclick="event.stopPropagation(); openVisitForm('${s.id}', '${s.name}', '${s.class}', '${s.no}', '${s.gpa}')">
-        ${s.visited ? 'เยี่ยมแล้ว' : 'บันทึก'}
-      </button>
-    </div>`).join('');
+  if(!container) return;
+  container.innerHTML = teacherStudents.map(s => {
+    const gpaPercent = s.gpa ? (parseFloat(s.gpa) / 4.0) * 100 : 0;
+    return `
+    <div class="student-item-row" onclick="viewStudentDetail('${s.id}')" style="cursor:pointer;">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div class="student-avatar ${s.avatar}" style="width:32px; height:32px; font-size:13px;">${s.no}</div>
+        <div class="student-name" style="font-size:13.5px;">${s.name}</div>
+      </div>
+      <div style="padding: 0 10px;">
+        <div style="font-size:12px; font-weight:500; text-align:center;">${parseFloat(s.gpa).toFixed(2)}</div>
+        <div class="gpa-track-bar" style="margin-top:2px; height:5px;"><div class="gpa-track-fill" style="width:${gpaPercent}%;"></div></div>
+      </div>
+      <div style="text-align:center;"><span class="badge ${s.visited ? 'badge-green' : 'badge-gray'}">${s.visited ? 'เยี่ยมแล้ว' : 'ยังไม่เยี่ยม'}</span></div>
+      <div style="text-align:center;">${s.risk ? '<span class="badge badge-red">เสี่ยง</span>' : '<span style="color:var(--gray400); font-size:12px;">-</span>'}</div>
+      <div style="text-align:right;">
+        <button type="button" class="visit-btn ${s.visited ? 'done' : ''}" style="padding:5px 12px; font-size:12px;" onclick="event.stopPropagation(); viewStudentDetail('${s.id}')">
+          ${s.visited ? 'ดูข้อมูล' : 'บันทึก'}
+        </button>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function filterClass(cls, el) {
@@ -211,14 +291,152 @@ function filterClass(cls, el) {
   renderStudentList(list);
 }
 
-function searchStudents(q) {
-  renderStudentList(q ? students.filter(s => s.name.includes(q)) : students);
+function viewStudentDetail(studentId) {
+  const s = students.find(item => String(item.id) === String(studentId));
+  if (!s) return;
+  
+  document.getElementById('student-list-wrapper').classList.add('hidden');
+  document.getElementById('student-detail-wrapper').classList.remove('hidden');
+  
+  document.getElementById('det-avatar').className = `info-avatar ${s.avatar}`;
+  document.getElementById('det-avatar').textContent = s.name.charAt(0);
+  document.getElementById('det-name').textContent = s.name;
+  document.getElementById('det-meta').textContent = `${s.class} · เลขที่ ${s.no} · โรงเรียนปิยมหาราชาลัย`;
+  document.getElementById('det-badge-gpa').textContent = `GPA ${s.gpa}`;
+  document.getElementById('det-badge-risk').textContent = s.risk ? "กลุ่มเสี่ยง" : "ปกติ";
+  document.getElementById('det-badge-risk').className = s.risk ? "badge badge-red" : "badge badge-green";
+
+  const history = window.rawVisits.filter(v => String(v.Student_ID) === String(studentId));
+  document.getElementById('det-badge-visited').textContent = `เยี่ยมบ้านแล้ว ${history.length} ครั้ง`;
+
+  let latestS1 = {}, latestS2 = {}, lat = "-", lng = "-";
+
+  if (history.length > 0) {
+    const latest = history[history.length - 1]; 
+    try { latestS1 = JSON.parse(latest.Step1_Basic); } catch(e){}
+    try { latestS2 = JSON.parse(latest.Step2_Economy); } catch(e){}
+    lat = latest.GPS_Lat || "-";
+    lng = latest.GPS_Lng || "-";
+  }
+
+  document.getElementById('det-idcard').textContent = latestS1.idcard || "-";
+  document.getElementById('det-dob').textContent = latestS1.dob || "-";
+  document.getElementById('det-wh').textContent = latestS1.weight && latestS1.height ? `${latestS1.weight} กก. / ${latestS1.height} ซม.` : "-";
+  document.getElementById('det-race').textContent = latestS1.race && latestS1.nation ? `${latestS1.race} / ${latestS1.nation}` : "-";
+  document.getElementById('det-subs').textContent = latestS1.likeSub && latestS1.dislikeSub ? `${latestS1.likeSub} / ${latestS1.dislikeSub}` : "-";
+  document.getElementById('det-address').textContent = latestS1.address || "-";
+
+  document.getElementById('det-father').textContent = latestS1.fatherName ? `${latestS1.fatherName} · อายุ ${latestS1.fatherAge || '-'} ปี · จบ ${latestS1.fatherEdu || '-'}` : "-";
+  document.getElementById('det-mother').textContent = latestS1.motherName ? `${latestS1.motherName} · อายุ ${latestS1.motherAge || '-'} ปี · จบ ${latestS1.motherEdu || '-'}` : "-";
+  document.getElementById('det-guard').textContent = latestS1.guardName ? `${latestS1.guardName} (${latestS1.guardRel || '-'}) · โทร ${latestS1.guardPhone || '-'}` : "-";
+  document.getElementById('det-siblings').textContent = latestS1.broOlder ? `พี่ชาย ${latestS1.broOlder} · พี่สาว ${latestS1.sisOlder} · น้องชาย ${latestS1.broYoung} · น้องสาว ${latestS1.sisYoung} คน` : "-";
+  document.getElementById('det-house-members').textContent = latestS2.houseMembers ? `${latestS2.houseMembers} คน` : "-";
+  document.getElementById('det-status').textContent = latestS2.parentStatus || "-";
+
+  document.getElementById('det-f-job').textContent = latestS2.fJob ? `${latestS2.fJob} · รายได้ ~${latestS2.fInc || '0'} บ./เดือน` : "-";
+  document.getElementById('det-m-job').textContent = latestS2.mJob ? `${latestS2.mJob} · รายได้ ~${latestS2.mInc || '0'} บ./เดือน` : "-";
+  document.getElementById('det-sp').textContent = latestS2.spName ? `${latestS2.spName} (${latestS2.spRel || '-'})` : "-";
+  document.getElementById('det-trans').textContent = latestS2.transport || "-";
+  document.getElementById('det-trans-meta').textContent = latestS2.transCost ? `${latestS2.transCost} บาท · ${latestS2.transTime || '-'} นาที (${latestS2.transDist || '-'} กม.)` : "-";
+  document.getElementById('det-money').textContent = latestS2.moneyDay ? `${latestS2.moneyDay} บ./วัน · สถานะ: ${latestS2.moneyEnough || '-'}` : "-";
+
+  document.getElementById('det-house-type').textContent = latestS2.houseType ? `${latestS2.houseType} · สภาพในบ้าน: ${latestS2.space || '-'}` : "-";
+  document.getElementById('det-safe').textContent = latestS2.safety || "-";
+  document.getElementById('det-atmos').textContent = latestS2.houseAtmos ? `${latestS2.houseAtmos} · ความเอาใจใส่: ${latestS2.care || '-'}` : "-";
+  document.getElementById('det-hobbies').textContent = latestS2.hobby ? `${latestS2.hobby} · ความสามารถ: ${latestS2.talent || '-'}` : "-";
+  document.getElementById('det-help').textContent = latestS2.helpNeeds || "ปกติ ไม่มีสภาวะความช่วยเหลือวิกฤต";
+  
+  const gpaPercent = s.gpa ? (parseFloat(s.gpa) / 4.0) * 100 : 0;
+  document.getElementById('det-gpa-fill').style.width = `${gpaPercent}%`;
+
+  document.getElementById('det-lat').textContent = lat;
+  document.getElementById('det-lng').textContent = lng;
+  
+  // ระบบเปิด Google Maps แท้จากระบบนำทาง
+  const mapsBtn = document.getElementById('det-google-maps-link');
+  if(lat !== "-" && lng !== "-") {
+    mapsBtn.href = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+    mapsBtn.style.display = "flex";
+  } else {
+    mapsBtn.style.display = "none";
+  }
+
+  // เรนเดอร์ประวัติประทับรูปภาพลายเซ็นต์จริงลงไทม์ไลน์ 1-5 (ตามแบบ image_10be1f.png)
+  const timelineContainer = document.getElementById('det-timeline-container');
+  let timelineHTML = '';
+  
+  for (let round = 1; round <= 5; round++) {
+    const matchVisit = history.find(v => {
+      try { return String(JSON.parse(v.Step1_Basic).visitNo) === String(round); } catch(e){return false;}
+    });
+    
+    if (matchVisit) {
+      let v1 = {}, v2 = {};
+      try { v1 = JSON.parse(matchVisit.Step1_Basic); } catch(e){}
+      try { v2 = JSON.parse(matchVisit.Step2_Economy); } catch(e){}
+      
+      let sigImages = { guardian: "", teacher: "" };
+      try { if(matchVisit.signature) { sigImages = JSON.parse(matchVisit.signature); } } catch(e){}
+      
+      timelineHTML += `
+        <div class="timeline-node complete">
+          <div class="timeline-box">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <strong style="color:var(--primary); font-size:14px;">🟢 ครั้งที่ ${round}</strong>
+              <span class="badge badge-green" style="font-size:11px; padding:2px 8px;">เสร็จสมบูรณ์</span>
+            </div>
+            <p style="font-size:12.5px; margin-bottom:3px; color:#555;"><i class="ti ti-calendar-event"></i> <b>วันที่เยี่ยม:</b> ${v1.visitDate || '-'} เวลา ${v1.visitTime || '-'} น.</p>
+            <p style="font-size:12.5px; margin-bottom:3px; color:#555;"><i class="ti ti-school"></i> <b>ครูผู้เยี่ยม:</b> ${v1.teacher1 || '-'} ${v1.teacher2 ? 'และ ' + v1.teacher2 : ''}</p>
+            <p style="font-size:12.5px; margin-bottom:8px; color:#555;"><i class="ti ti-edit"></i> <b>บันทึกสรุปย่อ:</b> ${v2.care || '-'}</p>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px;">
+              <div style="background: white; border: 1px solid var(--gray200); border-radius: 6px; padding: 10px; text-align: center; display:flex; flex-direction:column; justify-content:center; align-items:center; min-height:85px;">
+                <div style="font-size: 11px; color: #e67e22; font-weight:500; margin-bottom:4px;">✍️ ผู้ปกครอง</div>
+                ${sigImages.guardian ? `<img src="${sigImages.guardian}" style="height: 38px; max-width: 100%; object-fit: contain; margin-bottom:2px;" />` : '<div style="height:38px; line-height:38px; color:var(--gray400); font-size:11px;">ไม่มีลายเซ็น</div>'}
+                <div style="font-size: 10.5px; color: #27ae60; font-weight: 500;">✓ ตรวจลงนามแล้ว</div>
+              </div>
+              <div style="background: white; border: 1px solid var(--gray200); border-radius: 6px; padding: 10px; text-align: center; display:flex; flex-direction:column; justify-content:center; align-items:center; min-height:85px;">
+                <div style="font-size: 11px; color: #e67e22; font-weight:500; margin-bottom:4px;">✍️ ครูที่ปรึกษา 1</div>
+                ${sigImages.teacher ? `<img src="${sigImages.teacher}" style="height: 38px; max-width: 100%; object-fit: contain; margin-bottom:2px;" />` : '<div style="height:38px; line-height:38px; color:var(--gray400); font-size:11px;">ไม่มีลายเซ็น</div>'}
+                <div style="font-size: 10.5px; color: #27ae60; font-weight: 500;">✓ ตรวจลงนามแล้ว</div>
+              </div>
+            </div>
+          </div>
+        </div>`;
+    } else {
+      timelineHTML += `
+        <div class="timeline-node">
+          <div class="timeline-box" style="opacity:0.6; border-style:dashed; background:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size:13px; color:var(--gray600);"><i class="ti ti-clock"></i> ครั้งที่ ${round} - รอดำเนินการ</span>
+              <span class="badge badge-gray" onclick="openFormFromHistory('${s.id}', '${s.name}', '${s.class}', '${s.no}', '${s.gpa}', ${round})" style="cursor:pointer; background:var(--primary); color:white; font-size:11px; padding:3px 10px;">+ บันทึกด่วน</span>
+            </div>
+          </div>
+        </div>`;
+    }
+  }
+  timelineContainer.innerHTML = timelineHTML;
 }
 
-// ผูกฟังก์ชันข้ามขอบเขตอย่างเป็นทางการสากล เพื่อสกัดบั๊ก ReferenceError ให้หมดไป
+function openFormFromHistory(id, name, cls, no, gpa, roundNo) {
+  window.changeVisitRound(roundNo);
+  const selectRoundBox = document.getElementById('select-visit-round');
+  if(selectRoundBox) selectRoundBox.value = roundNo;
+  window.openVisitForm(id, name, cls, no, gpa);
+}
+
+function closeStudentDetail() {
+  document.getElementById('student-list-wrapper').classList.remove('hidden');
+  document.getElementById('student-detail-wrapper').classList.add('hidden');
+}
+
+// ผูกระบบสิทธิ์ข้ามไฟล์ ป้องกัน Error โกลบอลสากล
 window.showToast = showToast;
 window.showTab = showTab;
 window.setRole = setRole;
 window.changeVisitRound = changeVisitRound;
 window.filterClass = filterClass;
-window.searchStudents = searchStudents;
+window.searchStudents = (q) => { renderStudentList(q ? students.filter(s => s.name.includes(q)) : students); };
+window.viewStudentDetail = viewStudentDetail;
+window.closeStudentDetail = closeStudentDetail;
+window.openFormFromHistory = openFormFromHistory;

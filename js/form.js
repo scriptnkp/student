@@ -3,7 +3,10 @@ const totalSteps = 4;
 
 window.goToStep = function(n) {
   currentStep = n;
-  ['1','2','3','4'].forEach(s => { document.getElementById('form-step-' + s).classList.toggle('hidden', s !== String(n)); });
+  ['1','2','3','4'].forEach(s => { 
+    const el = document.getElementById('form-step-' + s);
+    if(el) el.classList.toggle('hidden', s !== String(n)); 
+  });
   document.getElementById('step-num').textContent = n;
   document.querySelectorAll('[id^="step-dot-"]').forEach((dot, i) => {
     dot.classList.remove('active', 'done');
@@ -13,77 +16,86 @@ window.goToStep = function(n) {
   document.getElementById('btn-prev').style.display = n > 1 ? 'flex' : 'none';
   document.getElementById('btn-next').textContent = n === 4 ? 'บันทึกข้อมูลเข้าสู่ระบบ' : 'ถัดไป';
   
+  // สั่งปลุกแคนวาสวาดภาพทันทีที่ย่างก้าวเข้าสู่หน้าสุดท้าย
   if (n === 4) { 
-    setTimeout(() => { window.initCanvas('sig-guardian'); window.initCanvas('sig-teacher1'); }, 300); 
+    setTimeout(() => { window.initCanvas('sig-guardian'); window.initCanvas('sig-teacher1'); }, 200); 
   }
   
-  // บังคับเด้งขึ้นบนสุดอัตโนมัติทั้งกล่องเนื้อหาหลักและวินโดว์หน้าจอ
+  // แก้วิกฤตปุ่มค้าง: สั่งให้ดีดเด้งพุ่งกลับไปบนสุดของหน้ากรอกทันที
   const mainContainer = document.getElementById('main');
   if (mainContainer) { mainContainer.scrollTop = 0; }
   window.scrollTo(0, 0);
 };
 
-// *** [แก้ไขระบบลายเซ็น iPad/Mobile] *** ใช้ระบบ PointerEvents แบบมาตรฐานอุตสาหกรรม ลื่นแน่นอน
+// ใช้ระบบ Pointer + Touch แบบคู่ขนานมาตรฐานถาวร ไม่ทำลายโหนด ป้องกันปัญหาปุ่มค้างถาวร
 window.initCanvas = function(canvasId) {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return;
   
-  const parentWidth = canvas.parentElement.clientWidth;
-  canvas.width = parentWidth > 0 ? parentWidth : 350;
+  canvas.width = canvas.parentElement.clientWidth || 350;
   canvas.height = 120;
   
   const ctx = canvas.getContext('2d');
-  ctx.strokeStyle = '#000000'; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.strokeStyle = '#000000'; ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
   
   let isDrawing = false; let lastX = 0; let lastY = 0;
   
-  function getCoordinates(e) {
+  function getPos(e) {
     const rect = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
     return [
-      (e.clientX - rect.left) * (canvas.width / rect.width),
-      (e.clientY - rect.top) * (canvas.height / rect.height)
+      (clientX - rect.left) * (canvas.width / rect.width),
+      (clientY - rect.top) * (canvas.height / rect.height)
     ];
   }
   
-  canvas.onpointerdown = function(e) {
-    canvas.setPointerCapture(e.pointerId);
-    isDrawing = true;
-    [lastX, lastY] = getCoordinates(e);
-  };
-  
-  canvas.onpointermove = function(e) {
-    if (!isDrawing) return;
-    const [x, y] = getCoordinates(e);
-    ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y); ctx.stroke();
-    [lastX, lastY] = [x, y];
-  };
-  
-  canvas.onpointerup = canvas.onpointercancel = function(e) {
-    try { canvas.releasePointerCapture(e.pointerId); } catch(err){}
-    isDrawing = false;
-  };
+  if (!canvas.dataset.hasListeners) {
+    canvas.addEventListener('mousedown', (e) => { isDrawing = true; [lastX, lastY] = getPos(e); });
+    canvas.addEventListener('mousemove', (e) => { if (!isDrawing) return; const [x, y] = getPos(e); ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y); ctx.stroke(); [lastX, lastY] = [x, y]; });
+    canvas.addEventListener('mouseup', () => isDrawing = false);
+    canvas.addEventListener('mouseleave', () => isDrawing = false);
+    
+    canvas.addEventListener('touchstart', (e) => { isDrawing = true; [lastX, lastY] = getPos(e); }, { passive: false });
+    canvas.addEventListener('touchmove', (e) => { if (!isDrawing) return; e.preventDefault(); const [x, y] = getPos(e); ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y); ctx.stroke(); [lastX, lastY] = [x, y]; }, { passive: false });
+    canvas.addEventListener('touchend', () => isDrawing = false);
+    
+    canvas.dataset.hasListeners = "true";
+  }
 };
 
-// *** [ฟีเจอร์ว้าว 1] ระบบพิมพ์ด้วยเสียงอัจฉริยะ (Voice-to-Text) ผ่าน Web Speech API ***
+window.submitNewTeacher = function() {
+  const teacherNameInput = document.getElementById('add-new-teacher-name');
+  const name = teacherNameInput ? teacherNameInput.value.trim() : "";
+  if (!name) { window.showToast('❌ กรุณากรอกชื่อครูก่อนกดบันทึก'); return; }
+  
+  window.showToast('กำลังส่งชื่อครูขึ้นคลาวด์...');
+  fetch(WEB_APP_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({ action: "add_teacher", name: name })
+  })
+  .then(r => r.json()).then(result => {
+    if (result.status === "success") {
+      window.showToast('✓ บันทึกชื่อครูสำเร็จ!');
+      teacherNameInput.value = '';
+      fetchStudentsData(); 
+    }
+  }).catch(() => window.showToast('❌ ไม่สามารถลงทะเบียนชื่อครูได้'));
+};
+
 window.startSpeechRecognition = function(inputId) {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) {
-    window.showToast("❌ อุปกรณ์หรือเบราว์เซอร์นี้ไม่รองรับระบบพิมพ์ด้วยเสียง");
-    return;
-  }
+  if (!SpeechRecognition) { window.showToast("❌ อุปกรณ์นี้ไม่รองรับระบบพิมพ์ด้วยเสียง"); return; }
   const recognition = new SpeechRecognition();
-  recognition.lang = 'th-TH'; recognition.interimResults = false; recognition.maxAlternatives = 1;
+  recognition.lang = 'th-TH';
   window.showToast("🎙️ กำลังฟังเสียง... พูดได้เลยครับครู");
-  
   recognition.onresult = function(event) {
     const text = event.results[0][0].transcript;
     const inputEl = document.getElementById(inputId);
-    if (inputEl) {
-      inputEl.value = inputEl.value ? inputEl.value + " " + text : text;
-    }
-    window.showToast("✓ พิมพ์ด้วยเสียงสำเร็จ!");
+    if (inputEl) { inputEl.value = inputEl.value ? inputEl.value + " " + text : text; }
+    window.showToast("✓ สั่งพิมพ์ด้วยเสียงสำเร็จ!");
   };
-  recognition.onerror = () => window.showToast("❌ เกิดข้อผิดพลาดในการรับเสียง");
   recognition.start();
 };
 
@@ -105,7 +117,7 @@ window.submitNewStudent = () => {
     .then(r => r.json()).then(result => {
         if (result.status === "success") {
             window.showToast('✓ เพิ่มนักเรียนใหม่เรียบร้อย!');
-            window.toggleAddStudentForm(); 
+            toggleAddStudentForm(); 
             document.getElementById('new-stu-name').value = ''; document.getElementById('new-stu-class').value = '';
             document.getElementById('new-stu-no').value = ''; document.getElementById('new-stu-gpa').value = '';
             fetchStudentsData(); 
@@ -120,15 +132,13 @@ window.openVisitForm = (id, name, cls, no, gpa) => {
   document.getElementById('f-name').value = name; document.getElementById('f-class').value = cls;
   document.getElementById('f-no').value = no; document.getElementById('f-gpa').value = gpa;
   
-  // รีเซ็ตค่าช่องลายเซ็นบรรจงและค่าฟอร์มอื่นๆ เป็นค่าว่างก่อนล้างค่าเก่า
   document.getElementById('f-sig-name-guard-input').value = "";
   document.getElementById('f-sig-name-teacher-input').value = document.getElementById('f-teacher-1').value || "";
   
-  // *** [ฟีเจอร์ว้าว 2] ระบบจำประวัติเดิมอัจฉริยะ (Smart Auto-Fill) ดึงข้อมูลจากการเยี่ยมครั้งก่อนมาใส่ให้ทันที ***
   if (window.rawVisits && window.rawVisits.length > 0) {
     const pastVisits = window.rawVisits.filter(v => String(v.Student_ID) === String(id));
     if (pastVisits.length > 0) {
-      const latestPastVisit = pastVisits[pastVisits.length - 1]; // เอาประวัติล่าสุดที่เคยบันทึกมาใช้ตั้งต้น
+      const latestPastVisit = pastVisits[pastVisits.length - 1]; 
       try {
         const s1 = JSON.parse(latestPastVisit.Step1_Basic);
         if(s1.idcard) document.getElementById('f-idcard').value = s1.idcard;
@@ -152,19 +162,17 @@ window.openVisitForm = (id, name, cls, no, gpa) => {
         if(s1.guardId) document.getElementById('f-guard-id').value = s1.guardId;
         if(s1.guardAge) document.getElementById('f-guard-age').value = s1.guardAge;
         if(s1.guardPhone) document.getElementById('f-guard-phone').value = s1.guardPhone;
-        window.showToast("🧠 ดึงประวัติฐานข้อมูลเดิมของนักเรียนใส่ฟอร์มให้อัตโนมัติ!");
+        window.showToast("🧠 ดึงประวัติพื้นฐานเดิมลงฟอร์มให้อัตโนมัติ!");
       } catch(err){}
     }
   }
 
-  // ผูกรอบครั้งที่ให้สอดคล้องกับคอมโบ้บ็อกซ์ที่เลือกหน้าแรกโดยอัตโนมัติ
   if(document.getElementById('f-visit-no')) { document.getElementById('f-visit-no').value = selectedRound; }
-
   window.showTab('form');
 };
 
-window.nextStep = () => { if (currentStep < totalSteps) window.goToStep(currentStep + 1); else window.submitVisitData(); };
-window.prevStep = () => { if (currentStep > 1) window.goToStep(currentStep - 1); };
+window.nextStep = () => { if (currentStep < totalSteps) goToStep(currentStep + 1); else submitVisitData(); };
+window.prevStep = () => { if (currentStep > 1) goToStep(currentStep - 1); };
 window.clearSig = (id) => { const c = document.getElementById(id); if(c) c.getContext('2d').clearRect(0,0,c.width,c.height); };
 
 window.getGPS = () => {
@@ -184,49 +192,44 @@ window.getGPS = () => {
 
 window.submitVisitData = () => {
   window.showToast('กำลังบันทึกข้อมูล...');
+  const canvasGuard = document.getElementById('sig-guardian');
+  const canvasTeacher = document.getElementById('sig-teacher1');
+  const sigGuardData = canvasGuard ? canvasGuard.toDataURL('image/png') : "";
+  const sigTeacherData = canvasTeacher ? canvasTeacher.toDataURL('image/png') : "";
+
   const payload = {
     action: "save_visit", studentId: currentStudentId || "ไม่ระบุ",
     teacherName: document.getElementById('f-teacher-1').value,
     step1: { 
-      visitNo: document.getElementById('f-visit-no').value,
-      visitDate: document.getElementById('f-visit-date').value,
-      visitTime: document.getElementById('f-visit-time').value,
-      teacher1: document.getElementById('f-teacher-1').value,
-      teacher2: document.getElementById('f-teacher-2').value,
-      name: document.getElementById('f-name').value, class: document.getElementById('f-class').value, 
-      no: document.getElementById('f-no').value, idcard: document.getElementById('f-idcard').value,
-      gpa: document.getElementById('f-gpa').value, likeSub: document.getElementById('f-like-sub').value,
-      dislikeSub: document.getElementById('f-dislike-sub').value, dob: document.getElementById('f-dob').value,
-      race: document.getElementById('f-race').value, nation: document.getElementById('f-nation').value,
-      weight: document.getElementById('f-weight').value, height: document.getElementById('f-height').value,
-      blood: document.getElementById('f-blood').value, address: document.getElementById('f-address').value,
-      fatherName: document.getElementById('f-father-name').value, fatherId: document.getElementById('f-father-id').value,
-      fatherAge: document.getElementById('f-father-age').value, fatherEdu: document.getElementById('f-father-edu').value,
-      fatherPhone: document.getElementById('f-father-phone').value, motherName: document.getElementById('f-mother-name').value,
-      motherId: document.getElementById('f-mother-id').value, motherAge: document.getElementById('f-mother-age').value,
-      motherEdu: document.getElementById('f-mother-edu').value, motherPhone: document.getElementById('f-mother-phone').value,
-      guardName: document.getElementById('f-guard-name').value, guardRel: document.getElementById('f-guard-rel').value,
-      guardId: document.getElementById('f-guard-id').value, guardAge: document.getElementById('f-guard-age').value,
-      guardPhone: document.getElementById('f-guard-phone').value, broOlder: document.getElementById('f-bro-older').value,
-      sisOlder: document.getElementById('f-sis-older').value, broYoung: document.getElementById('f-bro-young').value,
-      sisYoung: document.getElementById('f-sis-young').value, childNo: document.getElementById('f-child-no').value,
-      sibStudy: document.getElementById('f-sib-study').value, sibWork: document.getElementById('f-sib-work').value
+      visitNo: document.getElementById('f-visit-no').value, visitDate: document.getElementById('f-visit-date').value, visitTime: document.getElementById('f-visit-time').value,
+      teacher1: document.getElementById('f-teacher-1').value, teacher2: document.getElementById('f-teacher-2').value,
+      name: document.getElementById('f-name').value, class: document.getElementById('f-class').value, no: document.getElementById('f-no').value,
+      idcard: document.getElementById('f-idcard').value, gpa: document.getElementById('f-gpa').value, likeSub: document.getElementById('f-like-sub').value,
+      dislikeSub: document.getElementById('f-dislike-sub').value, dob: document.getElementById('f-dob').value, race: document.getElementById('f-race').value,
+      nation: document.getElementById('f-nation').value, weight: document.getElementById('f-weight').value, height: document.getElementById('f-height').value,
+      blood: document.getElementById('f-blood').value, address: document.getElementById('f-address').value, fatherName: document.getElementById('f-father-name').value,
+      fatherId: document.getElementById('f-father-id').value, fatherAge: document.getElementById('f-father-age').value, fatherEdu: document.getElementById('f-father-edu').value,
+      fatherPhone: document.getElementById('f-father-phone').value, motherName: document.getElementById('f-mother-name').value, motherId: document.getElementById('f-mother-id').value,
+      motherAge: document.getElementById('f-mother-age').value, motherEdu: document.getElementById('f-mother-edu').value, motherPhone: document.getElementById('f-mother-phone').value,
+      guardName: document.getElementById('f-guard-name').value, guardRel: document.getElementById('f-guard-rel').value, guardId: document.getElementById('f-guard-id').value,
+      guardAge: document.getElementById('f-guard-age').value, guardPhone: document.getElementById('f-guard-phone').value, broOlder: document.getElementById('f-bro-older').value,
+      sisOlder: document.getElementById('f-sis-older').value, broYoung: document.getElementById('f-bro-young').value, sisYoung: document.getElementById('f-sis-young').value,
+      childNo: document.getElementById('f-child-no').value, sibStudy: document.getElementById('f-sib-study').value, sibWork: document.getElementById('f-sib-work').value
     },
     step2: { 
       houseMembers: document.getElementById('f-house-members').value, houseCond: document.getElementById('f-house-cond').value,
-      houseAtmos: document.getElementById('f-house-atmos').value, care: document.getElementById('f-care').value,
-      rel: document.getElementById('f-rel').value, hobby: document.getElementById('f-hobby').value,
-      talent: document.getElementById('f-talent').value, parentSuggest: document.getElementById('f-parent-suggest').value,
+      houseAtmos: document.getElementById('f-house-atmos').value, care: document.getElementById('f-care').value, rel: document.getElementById('f-rel').value,
+      hobby: document.getElementById('f-hobby').value, talent: document.getElementById('f-talent').value, parentSuggest: document.getElementById('f-parent-suggest').value,
       fJob: document.getElementById('f-f-job').value, fPos: document.getElementById('f-f-pos').value, fInc: document.getElementById('f-f-inc').value,
       mJob: document.getElementById('f-m-job').value, mPos: document.getElementById('f-m-pos').value, mInc: document.getElementById('f-m-inc').value,
       spName: document.getElementById('f-sp-name').value, spRel: document.getElementById('f-sp-rel').value, spJob: document.getElementById('f-sp-job').value,
-      spPos: document.getElementById('f-sp-pos').value, spInc: document.getElementById('f-sp-inc').value,
-      transport: document.getElementById('f-trans-cost').value, safety: document.getElementById('s-parent-status').value
+      spPos: document.getElementById('f-sp-pos').value, spInc: document.getElementById('f-sp-inc').value, transport: document.getElementById('f-trans-cost').value, safety: document.getElementById('s-parent-status').value
     },
-    lat: document.getElementById('f-lat').value, lng: document.getElementById('f-lng').value, signature: "Saved"
+    lat: document.getElementById('f-lat').value, lng: document.getElementById('f-lng').value, 
+    signature: JSON.stringify({ guardian: sigGuardData, teacher: sigTeacherData })
   };
   fetch(WEB_APP_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) })
-  .then(r => r.json()).then(res => { if(res.status === "success") { window.showToast('✓ บันทึกเรียบร้อย!'); setTimeout(() => { window.showTab('dashboard'); fetchStudentsData(); }, 1500); } })
+  .then(r => r.json()).then(res => { if(res.status === "success") { window.showToast('✓ บันทึกข้อมูลคลาวด์เรียบร้อย!'); setTimeout(() => { window.showTab('dashboard'); fetchStudentsData(); }, 1500); } })
   .catch(() => window.showToast('❌ ไม่สามารถส่งข้อมูลได้'));
 };
 
@@ -237,7 +240,7 @@ window.prepareAndPrintPDF = () => {
   document.getElementById('p-visit-no').textContent = getVal('f-visit-no');
   document.getElementById('p-visit-date').textContent = getVal('f-visit-date');
   document.getElementById('p-visit-time').textContent = getVal('f-visit-time');
-  document.getElementById('p-teacher-1').textContent = getVal('f-teacher-1');
+  document.getElementById('p-teacher-1').textContent = document.getElementById('f-teacher-1').value;
   document.getElementById('p-teacher-2').textContent = getVal('f-teacher-2');
   document.getElementById('p-name').textContent = getVal('f-name');
   document.getElementById('p-class').textContent = getVal('f-class') + " เลขที่ " + getVal('f-no');
@@ -331,5 +334,7 @@ window.prepareAndPrintPDF = () => {
 window.toggleAddStudentForm = toggleAddStudentForm;
 window.submitNewStudent = submitNewStudent;
 window.openVisitForm = openVisitForm;
+window.nextStep = nextStep;
+window.prevStep = prevStep;
 window.clearSig = clearSig;
 window.getGPS = getGPS;
