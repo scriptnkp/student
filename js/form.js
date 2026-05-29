@@ -16,18 +16,15 @@ window.goToStep = function(n) {
   document.getElementById('btn-prev').style.display = n > 1 ? 'flex' : 'none';
   document.getElementById('btn-next').textContent = n === 4 ? 'บันทึกข้อมูลเข้าสู่ระบบ' : 'ถัดไป';
   
-  // สั่งปลุกแคนวาสวาดภาพทันทีที่ย่างก้าวเข้าสู่หน้าสุดท้าย
   if (n === 4) { 
     setTimeout(() => { window.initCanvas('sig-guardian'); window.initCanvas('sig-teacher1'); }, 200); 
   }
   
-  // แก้วิกฤตปุ่มค้าง: สั่งให้ดีดเด้งพุ่งกลับไปบนสุดของหน้ากรอกทันที
   const mainContainer = document.getElementById('main');
   if (mainContainer) { mainContainer.scrollTop = 0; }
   window.scrollTo(0, 0);
 };
 
-// ใช้ระบบ Pointer + Touch แบบคู่ขนานมาตรฐานถาวร ไม่ทำลายโหนด ป้องกันปัญหาปุ่มค้างถาวร
 window.initCanvas = function(canvasId) {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return;
@@ -125,10 +122,23 @@ window.submitNewStudent = () => {
     }).catch(() => window.showToast('❌ ไม่สามารถเพิ่มนักเรียนได้'));
 };
 
+// ====== [แก้ไขจุดที่ 2]: ปรับโครงสร้างให้ระบบคำนวณวันและเวลาปัจจุบันล็อกลงฟอร์มอัตโนมัติ 100% ======
 window.openVisitForm = (id, name, cls, no, gpa) => {
   currentStudentId = id;
   document.getElementById('form-header-name').textContent = `${name} · ${cls} เลขที่ ${no}`;
-  document.getElementById('f-visit-date').valueAsDate = new Date();
+  
+  // คํานวณ วันที่ และ เวลาปัจจุบัน (ล็อกตามเขตเวลาประเทศไทย GMT+7 ป้องกันบั๊กข้ามวันของระเบียบเบราว์เซอร์)
+  const now = new Date();
+  const tzOffset = now.getTimezoneOffset() * 60000;
+  const localISOTime = (new Date(now.getTime() - tzOffset)).toISOString();
+  
+  const localDate = localISOTime.split('T')[0]; // สกัดรูปฟอร์ม YYYY-MM-DD
+  const localTime = localISOTime.split('T')[1].substring(0, 5); // สกัดรูปฟอร์ม HH:MM
+
+  // ป้อนลงกล่องข้อความฟอร์มบันทึกโดยอัตโนมัติหน้างาน
+  if(document.getElementById('f-visit-date')) document.getElementById('f-visit-date').value = localDate;
+  if(document.getElementById('f-visit-time')) document.getElementById('f-visit-time').value = localTime;
+  
   document.getElementById('f-name').value = name; document.getElementById('f-class').value = cls;
   document.getElementById('f-no').value = no; document.getElementById('f-gpa').value = gpa;
   
