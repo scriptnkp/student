@@ -444,7 +444,7 @@ function closeStudentDetail() {
 }
 
 // ===================================================
-// ฟังก์ชันใหม่: ดึงข้อมูลประวัติการเยี่ยมบ้านรอบเก่ามาจัดลงกระดาษ A4 และสั่งพิมพ์ย้อนหลัง
+// ฟังก์ชันแก้บั๊กพิมพ์รายงานย้อนหลัง (ฉบับ Safe Setter ป้องกัน Element Null 100%)
 // ===================================================
 window.printPastVisit = function(studentId, round) {
   const s = window.rawStudents.find(item => String(item.id) === String(studentId));
@@ -468,100 +468,110 @@ window.printPastVisit = function(studentId, round) {
     if(rawSig) { sigImages = JSON.parse(rawSig); }
   } catch(e){}
 
-  // กวาดข้อมูลประวัติย้อนหลังโยนเข้าหน้ากระดาษพิมพ์จำลอง A4 ตรงๆ
-  document.getElementById('p-visit-no').textContent = v1.visitNo || round;
-  document.getElementById('p-visit-date').textContent = v1.visitDate || "-";
-  document.getElementById('p-visit-time').textContent = v1.visitTime || "-";
-  document.getElementById('p-teacher-1').textContent = v1.teacher1 || "-";
-  document.getElementById('p-teacher-2').textContent = v1.teacher2 || "-";
+  // 🛠️ สร้างฟังก์ชันตรวจสอบภายใน ป้องกันบั๊ก Null Element แครชหน้าจอ
+  function safeSetText(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val || "-";
+  }
+  function safeSetSrc(id, src) {
+    const el = document.getElementById(id);
+    if (el) el.src = src || "";
+  }
+
+  // ส่งข้อมูลเข้าฟอร์มพิมพ์ A4 แบบปลอดภัย ไม่ว่า ID ใน HTML จะสะกดผิดหรือตกหล่นระบบก็ไม่ค้าง
+  safeSetText('p-visit-no', v1.visitNo || round);
+  safeSetText('p-visit-date', v1.visitDate);
+  safeSetText('p-visit-time', v1.visitTime);
+  safeSetText('p-teacher-1', v1.teacher1);
+  safeSetText('p-teacher-2', v1.teacher2);
   
-  document.getElementById('p-name').textContent = s.name || s.Name || "-";
-  document.getElementById('p-class').textContent = (s.class || s.Class || "-") + " เลขที่ " + (s.no || s.Number || "-");
-  document.getElementById('p-idcard').textContent = v1.idcard || "-";
-  document.getElementById('p-gpa').textContent = parseFloat(s.gpa || s.GPA || 0).toFixed(2);
-  document.getElementById('p-like-sub').textContent = v1.likeSub || "-";
-  document.getElementById('p-dislike-sub').textContent = v1.dislikeSub || "-";
-  document.getElementById('p-dob').textContent = v1.dob || "-";
-  document.getElementById('p-race').textContent = v1.race || "-";
-  document.getElementById('p-nation').textContent = v1.nation || "-";
-  document.getElementById('p-weight').textContent = v1.weight || "-";
-  document.getElementById('p-height').textContent = v1.height || "-";
-  document.getElementById('p-blood').textContent = v1.blood || "-";
-  document.getElementById('p-address').textContent = v1.address || "-";
+  safeSetText('p-name', s.name || s.Name);
+  safeSetText('p-class', (s.class || s.Class || "-") + " เลขที่ " + (s.no || s.Number || "-"));
+  safeSetText('p-idcard', v1.idcard);
+  safeSetText('p-gpa', s.gpa ? parseFloat(s.gpa).toFixed(2) : "0.00");
+  safeSetText('p-like-sub', v1.likeSub);
+  safeSetText('p-dislike-sub', v1.dislikeSub);
+  safeSetText('p-dob', v1.dob);
+  safeSetText('p-race', v1.race);
+  safeSetText('p-nation', v1.nation);
+  safeSetText('p-weight', v1.weight);
+  safeSetText('p-height', v1.height);
+  safeSetText('p-blood', v1.blood);
+  safeSetText('p-address', v1.address);
   
-  document.getElementById('p-father-name').textContent = v1.fatherName || "-";
-  document.getElementById('p-father-id').textContent = v1.fatherId || "-";
-  document.getElementById('p-father-age').textContent = v1.fatherAge || "-";
-  document.getElementById('p-father-edu').textContent = v1.fatherEdu || "-";
-  document.getElementById('p-father-phone').textContent = v1.fatherPhone || "-";
+  safeSetText('p-father-name', v1.fatherName);
+  safeSetText('p-father-id', v1.fatherId);
+  safeSetText('p-father-age', v1.fatherAge);
+  safeSetText('p-father-edu', v1.fatherEdu);
+  safeSetText('p-father-phone', v1.fatherPhone);
   
-  document.getElementById('p-mother-name').textContent = v1.motherName || "-";
-  document.getElementById('p-mother-id').textContent = v1.motherId || "-";
-  document.getElementById('p-mother-age').textContent = v1.motherAge || "-";
-  document.getElementById('p-mother-edu').textContent = v1.motherEdu || "-";
-  document.getElementById('p-mother-phone').textContent = v1.motherPhone || "-";
+  safeSetText('p-mother-name', v1.motherName);
+  safeSetText('p-mother-id', v1.motherId);
+  safeSetText('p-mother-age', v1.motherAge);
+  safeSetText('p-mother-edu', v1.motherEdu);
+  safeSetText('p-mother-phone', v1.motherPhone);
   
-  document.getElementById('p-guard-name').textContent = v1.guardName || "-";
-  document.getElementById('p-guard-rel').textContent = v1.guardRel || "-";
-  document.getElementById('p-guard-id').textContent = v1.guardId || "-";
-  document.getElementById('p-guard-age').textContent = v1.guardAge || "-";
-  document.getElementById('p-guard-phone').textContent = v1.guardPhone || "-";
+  safeSetText('p-guard-name', v1.guardName);
+  safeSetText('p-guard-rel', v1.guardRel);
+  safeSetText('p-guard-id', v1.guardId);
+  safeSetText('p-guard-age', v1.guardAge);
+  safeSetText('p-guard-phone', v1.guardPhone);
   
-  document.getElementById('p-bro-older').textContent = v1.broOlder || "0";
-  document.getElementById('p-sis-older').textContent = v1.sisOlder || "0";
-  document.getElementById('p-bro-young').textContent = v1.broYoung || "0";
-  document.getElementById('p-sis-young').textContent = v1.sisYoung || "0";
-  document.getElementById('p-child-no').textContent = v1.childNo || "1";
-  document.getElementById('p-sib-study').textContent = v1.sibStudy || "1";
-  document.getElementById('p-sib-work').textContent = v1.sibWork || "0";
+  safeSetText('p-bro-older', v1.broOlder || "0");
+  safeSetText('p-sis-older', v1.sisOlder || "0");
+  safeSetText('p-bro-young', v1.broYoung || "0");
+  safeSetText('p-sis-young', v1.sisYoung || "0");
+  safeSetText('p-child-no', v1.childNo || "1");
+  safeSetText('p-sib-study', v1.sibStudy || "1");
+  safeSetText('p-sib-work', v1.sibWork || "0");
   
-  document.getElementById('p-house-members').textContent = v2.houseMembers || "-";
-  document.getElementById('p-house-cond').textContent = v2.houseCond || "-";
-  document.getElementById('p-house-atmos').textContent = v2.houseAtmos || "-";
-  document.getElementById('p-care').textContent = v2.care || "-";
-  document.getElementById('p-rel').textContent = v2.rel || "-";
-  document.getElementById('p-hobby').textContent = v2.hobby || "-";
-  document.getElementById('p-talent').textContent = v2.talent || "-";
-  document.getElementById('p-parent-suggest').textContent = v2.parentSuggest || "-";
+  safeSetText('p-house-members', v2.houseMembers);
+  safeSetText('p-house-cond', v2.houseCond);
+  safeSetText('p-house-atmos', v2.houseAtmos);
+  safeSetText('p-care', v2.care);
+  safeSetText('p-rel', v2.rel);
+  safeSetText('p-hobby', v2.hobby);
+  safeSetText('p-talent', v2.talent);
+  safeSetText('p-parent-suggest', v2.parentSuggest);
   
-  document.getElementById('p-f-job').textContent = v2.fJob || "-";
-  document.getElementById('p-f-pos').textContent = v2.fPos || "-";
-  document.getElementById('p-f-inc').textContent = v2.fInc || "-";
-  document.getElementById('p-m-job').textContent = v2.mJob || "-";
-  document.getElementById('p-m-pos').textContent = v2.mPos || "-";
-  document.getElementById('p-m-inc').textContent = v2.mInc || "-";
+  safeSetText('p-f-job', v2.fJob);
+  safeSetText('p-f-pos', v2.fPos);
+  safeSetText('p-f-inc', v2.fInc);
+  safeSetText('p-m-job', v2.mJob);
+  safeSetText('p-m-pos', v2.mPos);
+  safeSetText('p-m-inc', v2.mInc);
   
-  document.getElementById('p-sp-name').textContent = v2.spName || "-";
-  document.getElementById('p-sp-rel').textContent = v2.spRel || "-";
-  document.getElementById('p-sp-job').textContent = v2.spJob || "-";
-  document.getElementById('p-sp-pos').textContent = v2.spPos || "-";
-  document.getElementById('p-sp-inc').textContent = v2.spInc || "-";
+  safeSetText('p-sp-name', v2.spName);
+  safeSetText('p-sp-rel', v2.spRel);
+  safeSetText('p-sp-job', v2.spJob);
+  safeSetText('p-sp-pos', v2.spPos);
+  safeSetText('p-sp-inc', v2.spInc);
   
-  document.getElementById('p-help').textContent = v2.helpNeeds || "ไม่มี";
-  document.getElementById('p-trans').textContent = v2.transport || "-";
-  document.getElementById('p-trans-cost').textContent = v2.transCost || "-";
-  document.getElementById('p-trans-time').textContent = v2.transTime || "-";
-  document.getElementById('p-trans-dist').textContent = v2.transDist || "-";
-  document.getElementById('p-money-day').textContent = v2.moneyDay || "-";
-  document.getElementById('p-money-en').textContent = v2.moneyEnough || "-";
-  document.getElementById('p-bf').textContent = v2.breakfast || "-";
-  document.getElementById('p-lunch').textContent = v2.lunch || "-";
-  document.getElementById('p-parent-status').textContent = v2.parentStatus || "-";
-  document.getElementById('p-house-type').textContent = v2.houseType || "-";
-  document.getElementById('p-space').textContent = v2.space || "-";
-  document.getElementById('p-private-rm').textContent = v2.privateRoom || "-";
-  document.getElementById('p-safe').textContent = v2.safety || "-";
+  safeSetText('p-help', v2.helpNeeds);
+  safeSetText('p-trans', v2.transport);
+  safeSetText('p-trans-cost', v2.transCost);
+  safeSetText('p-trans-time', v2.transTime);
+  safeSetText('p-trans-dist', v2.transDist);
+  safeSetText('p-money-day', v2.moneyDay);
+  safeSetText('p-money-en', v2.moneyEnough);
+  safeSetText('p-bf', v2.breakfast);
+  safeSetText('p-lunch', v2.lunch);
+  safeSetText('p-parent-status', v2.parentStatus);
+  safeSetText('p-house-type', v2.houseType);
+  safeSetText('p-space', v2.space);
+  safeSetText('p-private-rm', v2.privateRoom);
+  safeSetText('p-safe', v2.safety);
   
-  document.getElementById('p-lat').textContent = matchVisit.GPS_Lat || "-";
-  document.getElementById('p-lng').textContent = matchVisit.GPS_Lng || "-";
+  safeSetText('p-lat', matchVisit.GPS_Lat);
+  safeSetText('p-lng', matchVisit.GPS_Lng);
   
-  document.getElementById('print-sig-img-guardian').src = sigImages.guardian || "";
-  document.getElementById('print-sig-img-teacher').src = sigImages.teacher || "";
+  safeSetSrc('print-sig-img-guardian', sigImages.guardian);
+  safeSetSrc('print-sig-img-teacher', sigImages.teacher);
   
-  document.getElementById('p-sig-name-guardian').textContent = v1.guardName || v1.fatherName || v1.motherName || "ผู้ปกครอง";
-  document.getElementById('p-sig-name-teacher').textContent = v1.teacher1 || "ครูที่ปรึกษา";
+  safeSetText('p-sig-name-guardian', v1.guardName || v1.fatherName || v1.motherName || "ผู้ปกครอง");
+  safeSetText('p-sig-name-teacher', v1.teacher1 || "ครูที่ปรึกษา");
   
-  // สั่งเปิดคำสั่งปริ้นเอกสารย้อนหลังรอบนี้ทันที
+  // สั่งเปิดหน้าต่างปริ้นท์เอกสารย้อนหลังทันที
   window.print();
 };
 
