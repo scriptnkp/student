@@ -393,7 +393,10 @@ function viewStudentDetail(studentId) {
           <div class="timeline-box">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
               <strong style="color:var(--primary); font-size:14px;">🟢 ครั้งที่ ${round}</strong>
-              <span class="badge badge-green" style="font-size:11px; padding:2px 8px;">เสร็จสมบูรณ์</span>
+              <div style="display:flex; gap:6px; align-items:center;">
+                <span class="badge badge-green" style="font-size:11px; padding:2px 8px;">เสร็จสมบูรณ์</span>
+                <button type="button" onclick="printPastVisit('${s.id}', ${round})" style="padding:3px 8px; font-size:11px; background:var(--accent); color:black; border:none; border-radius:4px; cursor:pointer; display:flex; align-items:center; gap:2px; font-family:inherit; font-weight:500;"><i class="ti ti-printer"></i> พิมพ์รายงาน</button>
+              </div>
             </div>
             <p style="font-size:12.5px; margin-bottom:3px; color:#555;"><i class="ti ti-calendar-event"></i> <b>วันที่เยี่ยม:</b> ${v1.visitDate || '-'} เวลา ${v1.visitTime || '-'} น.</p>
             <p style="font-size:12.5px; margin-bottom:3px; color:#555;"><i class="ti ti-school"></i> <b>ครูผู้เยี่ยม:</b> ${v1.teacher1 || '-'} ${v1.teacher2 ? 'และ ' + v1.teacher2 : ''}</p>
@@ -439,6 +442,128 @@ function closeStudentDetail() {
   document.getElementById('student-list-wrapper').classList.remove('hidden');
   document.getElementById('student-detail-wrapper').classList.add('hidden');
 }
+
+// ===================================================
+// ฟังก์ชันใหม่: ดึงข้อมูลประวัติการเยี่ยมบ้านรอบเก่ามาจัดลงกระดาษ A4 และสั่งพิมพ์ย้อนหลัง
+// ===================================================
+window.printPastVisit = function(studentId, round) {
+  const s = window.rawStudents.find(item => String(item.id) === String(studentId));
+  const matchVisit = window.rawVisits.find(v => {
+    if (String(v.Student_ID) !== String(studentId)) return false;
+    try { return String(JSON.parse(v.Step1_Basic).visitNo) === String(round); } catch(e){return false;}
+  });
+  
+  if (!s || !matchVisit) {
+    showToast("❌ ไม่พบข้อมูลประวัติการเยี่ยมบ้านในรอบนี้");
+    return;
+  }
+  
+  let v1 = {}, v2 = {};
+  try { v1 = JSON.parse(matchVisit.Step1_Basic); } catch(e){}
+  try { v2 = JSON.parse(matchVisit.Step2_Economy); } catch(e){}
+  
+  let sigImages = { guardian: "", teacher: "" };
+  try {
+    var rawSig = matchVisit.signature || matchVisit.Signatures || matchVisit.Signature;
+    if(rawSig) { sigImages = JSON.parse(rawSig); }
+  } catch(e){}
+
+  // กวาดข้อมูลประวัติย้อนหลังโยนเข้าหน้ากระดาษพิมพ์จำลอง A4 ตรงๆ
+  document.getElementById('p-visit-no').textContent = v1.visitNo || round;
+  document.getElementById('p-visit-date').textContent = v1.visitDate || "-";
+  document.getElementById('p-visit-time').textContent = v1.visitTime || "-";
+  document.getElementById('p-teacher-1').textContent = v1.teacher1 || "-";
+  document.getElementById('p-teacher-2').textContent = v1.teacher2 || "-";
+  
+  document.getElementById('p-name').textContent = s.name || s.Name || "-";
+  document.getElementById('p-class').textContent = (s.class || s.Class || "-") + " เลขที่ " + (s.no || s.Number || "-");
+  document.getElementById('p-idcard').textContent = v1.idcard || "-";
+  document.getElementById('p-gpa').textContent = parseFloat(s.gpa || s.GPA || 0).toFixed(2);
+  document.getElementById('p-like-sub').textContent = v1.likeSub || "-";
+  document.getElementById('p-dislike-sub').textContent = v1.dislikeSub || "-";
+  document.getElementById('p-dob').textContent = v1.dob || "-";
+  document.getElementById('p-race').textContent = v1.race || "-";
+  document.getElementById('p-nation').textContent = v1.nation || "-";
+  document.getElementById('p-weight').textContent = v1.weight || "-";
+  document.getElementById('p-height').textContent = v1.height || "-";
+  document.getElementById('p-blood').textContent = v1.blood || "-";
+  document.getElementById('p-address').textContent = v1.address || "-";
+  
+  document.getElementById('p-father-name').textContent = v1.fatherName || "-";
+  document.getElementById('p-father-id').textContent = v1.fatherId || "-";
+  document.getElementById('p-father-age').textContent = v1.fatherAge || "-";
+  document.getElementById('p-father-edu').textContent = v1.fatherEdu || "-";
+  document.getElementById('p-father-phone').textContent = v1.fatherPhone || "-";
+  
+  document.getElementById('p-mother-name').textContent = v1.motherName || "-";
+  document.getElementById('p-mother-id').textContent = v1.motherId || "-";
+  document.getElementById('p-mother-age').textContent = v1.motherAge || "-";
+  document.getElementById('p-mother-edu').textContent = v1.motherEdu || "-";
+  document.getElementById('p-mother-phone').textContent = v1.motherPhone || "-";
+  
+  document.getElementById('p-guard-name').textContent = v1.guardName || "-";
+  document.getElementById('p-guard-rel').textContent = v1.guardRel || "-";
+  document.getElementById('p-guard-id').textContent = v1.guardId || "-";
+  document.getElementById('p-guard-age').textContent = v1.guardAge || "-";
+  document.getElementById('p-guard-phone').textContent = v1.guardPhone || "-";
+  
+  document.getElementById('p-bro-older').textContent = v1.broOlder || "0";
+  document.getElementById('p-sis-older').textContent = v1.sisOlder || "0";
+  document.getElementById('p-bro-young').textContent = v1.broYoung || "0";
+  document.getElementById('p-sis-young').textContent = v1.sisYoung || "0";
+  document.getElementById('p-child-no').textContent = v1.childNo || "1";
+  document.getElementById('p-sib-study').textContent = v1.sibStudy || "1";
+  document.getElementById('p-sib-work').textContent = v1.sibWork || "0";
+  
+  document.getElementById('p-house-members').textContent = v2.houseMembers || "-";
+  document.getElementById('p-house-cond').textContent = v2.houseCond || "-";
+  document.getElementById('p-house-atmos').textContent = v2.houseAtmos || "-";
+  document.getElementById('p-care').textContent = v2.care || "-";
+  document.getElementById('p-rel').textContent = v2.rel || "-";
+  document.getElementById('p-hobby').textContent = v2.hobby || "-";
+  document.getElementById('p-talent').textContent = v2.talent || "-";
+  document.getElementById('p-parent-suggest').textContent = v2.parentSuggest || "-";
+  
+  document.getElementById('p-f-job').textContent = v2.fJob || "-";
+  document.getElementById('p-f-pos').textContent = v2.fPos || "-";
+  document.getElementById('p-f-inc').textContent = v2.fInc || "-";
+  document.getElementById('p-m-job').textContent = v2.mJob || "-";
+  document.getElementById('p-m-pos').textContent = v2.mPos || "-";
+  document.getElementById('p-m-inc').textContent = v2.mInc || "-";
+  
+  document.getElementById('p-sp-name').textContent = v2.spName || "-";
+  document.getElementById('p-sp-rel').textContent = v2.spRel || "-";
+  document.getElementById('p-sp-job').textContent = v2.spJob || "-";
+  document.getElementById('p-sp-pos').textContent = v2.spPos || "-";
+  document.getElementById('p-sp-inc').textContent = v2.spInc || "-";
+  
+  document.getElementById('p-help').textContent = v2.helpNeeds || "ไม่มี";
+  document.getElementById('p-trans').textContent = v2.transport || "-";
+  document.getElementById('p-trans-cost').textContent = v2.transCost || "-";
+  document.getElementById('p-trans-time').textContent = v2.transTime || "-";
+  document.getElementById('p-trans-dist').textContent = v2.transDist || "-";
+  document.getElementById('p-money-day').textContent = v2.moneyDay || "-";
+  document.getElementById('p-money-en').textContent = v2.moneyEnough || "-";
+  document.getElementById('p-bf').textContent = v2.breakfast || "-";
+  document.getElementById('p-lunch').textContent = v2.lunch || "-";
+  document.getElementById('p-parent-status').textContent = v2.parentStatus || "-";
+  document.getElementById('p-house-type').textContent = v2.houseType || "-";
+  document.getElementById('p-space').textContent = v2.space || "-";
+  document.getElementById('p-private-rm').textContent = v2.privateRoom || "-";
+  document.getElementById('p-safe').textContent = v2.safety || "-";
+  
+  document.getElementById('p-lat').textContent = matchVisit.GPS_Lat || "-";
+  document.getElementById('p-lng').textContent = matchVisit.GPS_Lng || "-";
+  
+  document.getElementById('print-sig-img-guardian').src = sigImages.guardian || "";
+  document.getElementById('print-sig-img-teacher').src = sigImages.teacher || "";
+  
+  document.getElementById('p-sig-name-guardian').textContent = v1.guardName || v1.fatherName || v1.motherName || "ผู้ปกครอง";
+  document.getElementById('p-sig-name-teacher').textContent = v1.teacher1 || "ครูที่ปรึกษา";
+  
+  // สั่งเปิดคำสั่งปริ้นเอกสารย้อนหลังรอบนี้ทันที
+  window.print();
+};
 
 // ผูกระบบสิทธิ์ข้ามไฟล์ ป้องกัน Error โกลบอลสากล
 window.showToast = showToast;
