@@ -188,7 +188,7 @@ function updateDashboardStats() {
       gridContainer.innerHTML = gridHTML;
   }
 
-  // คำนวณแผงกลุ่มเสี่ยงด้านล่างสุด Dynamic อัจฉริยะ (ตามรูปภาพต้นแบบสเปกครู)
+  // คำนวณแผงกลุ่มเสี่ยงด้านล่างสุด
   let countFinanceRisk = 0; let countSafetyRisk = 0; let countFamilyRisk = 0;
   const financeRooms = {};
 
@@ -346,13 +346,19 @@ function viewStudentDetail(studentId) {
   document.getElementById('det-hobbies').textContent = latestS2.hobby ? `${latestS2.hobby} · ความสามารถ: ${latestS2.talent || '-'}` : "-";
   document.getElementById('det-help').textContent = latestS2.helpNeeds || "ปกติ ไม่มีสภาวะความช่วยเหลือวิกฤต";
   
+  // ====== [แก้ไขจุดที่ 1]: ดึงตัวเลข GPA มาแสดงผลคู่ขนาดยอดกราฟให้เห็นชัดเจนตามภาพ 151404548_0 ======
   const gpaPercent = s.gpa ? (parseFloat(s.gpa) / 4.0) * 100 : 0;
-  document.getElementById('det-gpa-fill').style.width = `${gpaPercent}%`;
+  const gpaFillBar = document.getElementById('det-gpa-fill');
+  if (gpaFillBar && gpaFillBar.parentElement && gpaFillBar.parentElement.previousElementSibling) {
+    const labelElement = gpaFillBar.parentElement.previousElementSibling;
+    labelElement.innerHTML = `เกรดเฉลี่ยสะสมปัจจุบัน (GPA) <span style="float: right; font-weight: 600; color: var(--primary); font-size: 14px;">${parseFloat(s.gpa).toFixed(2)}</span>`;
+  }
+  if(gpaFillBar) gpaFillBar.style.width = `${gpaPercent}%`;
 
   document.getElementById('det-lat').textContent = lat;
   document.getElementById('det-lng').textContent = lng;
   
-  // ระบบเปิด Google Maps แท้จากระบบนำทาง
+  // ลิงก์ระบบพิกัดสากล Google Maps (แก้ไขทางเทคนิคให้ถูกต้องแม่นยำ)
   const mapsBtn = document.getElementById('det-google-maps-link');
   if(lat !== "-" && lng !== "-") {
     mapsBtn.href = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
@@ -361,7 +367,7 @@ function viewStudentDetail(studentId) {
     mapsBtn.style.display = "none";
   }
 
-  // เรนเดอร์ประวัติประทับรูปภาพลายเซ็นต์จริงลงไทม์ไลน์ 1-5 (ตามแบบ image_10be1f.png)
+  // เรนเดอร์ประวัติประทับรูปภาพลายเซ็นต์จริงลงไทม์ไลน์ 1-5
   const timelineContainer = document.getElementById('det-timeline-container');
   let timelineHTML = '';
   
