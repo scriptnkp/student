@@ -382,7 +382,11 @@ function viewStudentDetail(studentId) {
       try { v2 = JSON.parse(matchVisit.Step2_Economy); } catch(e){}
       
       let sigImages = { guardian: "", teacher: "" };
-      try { if(matchVisit.signature) { sigImages = JSON.parse(matchVisit.signature); } } catch(e){}
+      try { 
+          // ดึงค่าจากหัวคอลัมน์ทุกรูปแบบ (ตัวเล็ก/ตัวใหญ่/มี s) ป้องกันบั๊กชื่อคอลัมน์ไม่ตรง
+          var rawSig = matchVisit.signature || matchVisit.Signatures || matchVisit.Signature;
+          if(rawSig) { sigImages = JSON.parse(rawSig); } 
+          } catch(e){}
       
       timelineHTML += `
         <div class="timeline-node complete">
