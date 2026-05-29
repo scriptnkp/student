@@ -8,14 +8,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <style>
-  /* สไตล์โมดูลาร์เสริมเพื่อให้การแสดงผลหน้าประวัติเชิงลึกและการ์ดต่างๆ สวยงามเป๊ะตามต้นแบบสากล */
   .detail-back-btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 18px; background: white; border: 1px solid var(--gray300); border-radius: 8px; font-size: 13px; cursor: pointer; margin-bottom: 16px; font-weight: 500; transition: background 0.2s; }
   .detail-back-btn:hover { background: var(--gray50); }
-  .info-profile-card { background: white; border: 1px solid var(--gray200); border-radius: var(--radius); padding: 20px; display: flex; align-items: center; gap: 16px; box-shadow: var(--shadow); margin-bottom: 14px; }
+  .info-profile-card { background: white; border: 1px solid var(--gray200); border-radius: var(--radius); padding: 20px; display: flex; align-items: center; gap: 16px; box-shadow: var(--shadow); margin-bottom: 14px; width: 100%; }
   .info-avatar { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 600; flex-shrink: 0; }
-  .info-card-grid { display: grid; grid-template-columns: 1fr; gap: 14px; margin-bottom: 14px; }
+  .info-card-grid { display: grid; grid-template-columns: 1fr; gap: 14px; margin-bottom: 14px; width: 100%; }
   @media (min-width: 768px) { .info-card-grid { grid-template-columns: 1fr 1fr; } }
-  .data-list-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--gray100); font-size: 13px; align-items: center; }
+  .data-list-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--gray100); font-size: 13px; align-items: center; width: 100%; }
   .data-list-row:last-child { border-bottom: none; }
   .data-list-label { color: var(--gray600); }
   .data-list-value { font-weight: 500; color: var(--gray900); text-align: right; }
@@ -23,17 +22,17 @@
   .gpa-track-fill { height: 100%; background: var(--primary); border-radius: 5px; transition: width 0.3s; }
   .maps-redirect-btn { margin-top: 12px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px; background: #e8f0fe; color: #1a73e8; border: 1px solid #c2e7ff; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 500; transition: background 0.2s; }
   .maps-redirect-btn:hover { background: #d2e3fc; }
-  .timeline-wrapper { position: relative; padding-left: 20px; border-left: 2px dashed var(--gray300); margin-left: 10px; margin-top: 14px; }
-  .timeline-node { position: relative; margin-bottom: 24px; }
+  .timeline-wrapper { position: relative; padding-left: 20px; border-left: 2px dashed var(--gray300); margin-left: 10px; margin-top: 14px; width: 100%; }
+  .timeline-node { position: relative; margin-bottom: 24px; width: 100%; }
   .timeline-node::before { content: ''; position: absolute; top: 4px; left: -26px; width: 10px; height: 10px; border-radius: 50%; background: var(--gray400); border: 2px solid white; }
   .timeline-node.complete::before { background: var(--primary); }
-  .timeline-box { background: var(--gray50); border: 1px solid var(--gray200); border-radius: 8px; padding: 14px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.02); }
-  .sig-preview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; text-align: center; }
+  .timeline-box { background: var(--gray50); border: 1px solid var(--gray200); border-radius: 8px; padding: 14px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.02); width: 100%; }
+  .sig-preview-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 12px; text-align: center; width: 100%; }
   .sig-preview-box { background: white; border: 1px solid var(--gray200); border-radius: 6px; padding: 8px; font-size: 11px; color: var(--gray600); }
   .student-list-header-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 100px; padding: 10px 14px; font-size: 12px; font-weight: 600; color: var(--gray600); background: var(--gray50); border: 1px solid var(--gray200); border-radius: 6px; margin-bottom: 6px; align-items: center; }
   .student-item-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 100px; padding: 12px 14px; background: white; border: 1px solid var(--gray200); border-radius: 8px; margin-bottom: 8px; align-items: center; box-shadow: var(--shadow); transition: background 0.2s; }
   .student-item-row:hover { background: var(--gray50); }
-  .risk-panel-card { background: #fff5f5 !important; border: 1px solid #fbc4c4 !important; border-left: 5px solid #d9534f !important; border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; box-shadow: var(--shadow); }
+  .risk-panel-card { background: #fff5f5 !important; border: 1px solid #fbc4c4 !important; border-left: 5px solid #d9534f !important; border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; box-shadow: var(--shadow); width: 100%; }
   .risk-panel-card h4 { font-size: 14px; font-weight: 600; color: #c0392b; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
   .risk-panel-card p { font-size: 12px; color: #555555; line-height: 1.5; }
 </style>
@@ -114,13 +113,11 @@
           <div class="prog-label"><span>ความคืบหน้าห้อง ม.1/9</span><span style="color:var(--primary); font-weight:500" id="t-percent">0%</span></div>
           <div class="prog-bar"><div class="prog-fill" id="t-prog-fill" style="width:0%"></div></div>
         </div>
-        <p style="font-size:13px; font-weight:500; color: var(--gray700); margin-bottom:10px">รายชื่อนักเรียนในที่ปรึกษา</p>
         <div id="teacher-student-list"></div>
       </div>
     </div>
 
     <div class="page" id="page-students">
-      
       <div id="student-list-wrapper">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
           <p class="section-title" style="margin:0;">รายชื่อนักเรียน</p>
@@ -446,10 +443,10 @@
             </div>
           </div>
           <div class="form-row">
-            <div class="form-group"><label>อาหารเช้า</label>
+            <div class="form-group"><label class="check-item">อาหารเช้า</label>
               <div class="check-row"><label class="check-item"><input type="radio" name="r_bf" value="รับประทาน" checked> รับประทาน</label><label class="check-item"><input type="radio" name="r_bf" value="ไม่รับประทาน"> ไม่รับประทาน</label></div>
             </div>
-            <div class="form-group"><label>อาหารกลางวัน</label>
+            <div class="form-group"><label class="check-item">อาหารกลางวัน</label>
               <div class="check-row"><label class="check-item"><input type="radio" name="r_lunch" value="ซื้อรับประทาน" checked> ซื้อรับประทาน</label><label class="check-item"><input type="radio" name="r_lunch" value="นำมารับประทาน"> นำมาเอง</label></div>
             </div>
           </div>
@@ -525,6 +522,112 @@
         <button type="button" class="btn btn-secondary" id="btn-prev" onclick="prevStep()" style="display:none">ย้อนกลับ</button>
         <button type="button" class="btn btn-primary" id="btn-next" onclick="nextStep()">ถัดไป</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<div id="print-template">
+  <div class="print-header">
+    <h2>แบบบันทึกการเยี่ยมบ้านนักเรียนโรงเรียนปิยมหาราชาลัย</h2>
+  </div>
+  <div class="print-row" style="justify-content: flex-end;">
+    <span class="print-label">ครั้งที่</span><span class="print-val short" id="p-visit-no"></span>
+    <span class="print-label">วันที่</span><span class="print-val short" id="p-visit-date"></span>
+    <span class="print-label">เวลาเยี่ยม</span><span class="print-val short" id="p-visit-time"></span>
+  </div>
+  <div class="print-row">
+    <span class="print-label">ชื่อครูที่เยี่ยมบ้าน 1.</span><span class="print-val" id="p-teacher-1"></span>
+    <span class="print-label">2.</span><span class="print-val" id="p-teacher-2"></span>
+  </div>
+  <div class="print-section-title">ข้อมูลพื้นฐาน</div>
+  <div class="print-row">
+    <span class="print-label">ชื่อนักเรียน</span><span class="print-val" id="p-name"></span>
+    <span class="print-label">ชั้น</span><span class="print-val short" id="p-class"></span>
+    <span class="print-label">เลขประจำตัวประชาชน</span><span class="print-val short" id="p-idcard"></span>
+  </div>
+  <div class="print-row">
+    <span class="print-label">ผลการเรียนปีที่ผ่านมา</span><span class="print-val short" id="p-gpa"></span>
+    <span class="print-label">วิชาที่ชอบ</span><span class="print-val" id="p-like-sub"></span>
+    <span class="print-label">วิชาที่ไม่ชอบ</span><span class="print-val" id="p-dislike-sub"></span>
+  </div>
+  <div class="print-row">
+    <span class="print-label">วัน/เดือน/ปีเกิด</span><span class="print-val short" id="p-dob"></span>
+    <span class="print-label">เชื้อชาติ</span><span class="print-val short" id="p-race"></span>
+    <span class="print-label">สัญชาติ</span><span class="print-val short" id="p-nation"></span>
+    <span class="print-label">น้ำหนัก</span><span class="print-val short" id="p-weight"></span>
+    <span class="print-label">ส่วนสูง</span><span class="print-val short" id="p-height"></span>
+    <span class="print-label">หมู่โลหิต</span><span class="print-val short" id="p-blood"></span>
+  </div>
+  <div class="print-row"><span class="print-label">ที่อยู่</span><span class="print-val" id="p-address"></span></div>
+  <div class="print-row" style="margin-top: 5px;"><span class="print-label">ชื่อบิดา</span><span class="print-val" id="p-father-name"></span><span class="print-label">เลขประจำตัวประชาชน</span><span class="print-val short" id="p-father-id"></span></div>
+  <div class="print-row">
+    <span class="print-label">อายุ</span><span class="print-val short" id="p-father-age"></span><span>ปี</span>
+    <span class="print-label">ระดับการศึกษา</span><span class="print-val short" id="p-father-edu"></span>
+    <span class="print-label">หมายเลขโทรศัพท์</span><span class="print-val short" id="p-father-phone"></span>
+  </div>
+  <div class="print-row" style="margin-top: 5px;"><span class="print-label">ชื่อมารดา</span><span class="print-val" id="p-mother-name"></span><span class="print-label">เลขประจำตัวประชาชน</span><span class="print-val short" id="p-mother-id"></span></div>
+  <div class="print-row">
+    <span class="print-label">อายุ</span><span class="print-val short" id="p-mother-age"></span><span>ปี</span>
+    <span class="print-label">ระดับการศึกษา</span><span class="print-val short" id="p-mother-edu"></span>
+    <span class="print-label">หมายเลขโทรศัพท์</span><span class="print-val short" id="p-mother-phone"></span>
+  </div>
+  <div class="print-row" style="margin-top: 5px;"><span class="print-label">ชื่อผู้ปกครอง</span><span class="print-val" id="p-guard-name"></span><span class="print-label">เกี่ยวข้องเป็น</span><span class="print-val short" id="p-guard-rel"></span></div>
+  <div class="print-row">
+    <span class="print-label">เลข ปชช.</span><span class="print-val short" id="p-guard-id"></span>
+    <span class="print-label">อายุ</span><span class="print-val short" id="p-guard-age"></span>
+    <span class="print-label">โทรศัพท์</span><span class="print-val short" id="p-guard-phone"></span>
+  </div>
+  <div class="print-row" style="margin-top: 5px;">
+    <span class="print-label">จำนวนพี่น้อง พี่ชาย</span><span class="print-val short" id="p-bro-older"></span><span>คน</span>
+    <span class="print-label">พี่สาว</span><span class="print-val short" id="p-sis-older"></span><span>คน</span>
+    <span class="print-label">น้องชาย</span><span class="print-val short" id="p-bro-young"></span><span>คน</span>
+    <span class="print-label">น้องสาว</span><span class="print-val short" id="p-sis-young"></span><span>คน</span>
+  </div>
+  <div class="print-row">
+    <span class="print-label">นักเรียนเป็นบุตรลำดับที่</span><span class="print-val short" id="p-child-no"></span>
+    <span class="print-label">พี่น้องที่กำลังศึกษา</span><span class="print-val short" id="p-sib-study"></span><span>คน</span>
+    <span class="print-label">พี่น้องที่ทำงานแล้ว</span><span class="print-val short" id="p-sib-work"></span><span>คน</span>
+  </div>
+  <div class="print-section-title">ข้อมูลครัวเรือน</div>
+  <div class="print-row"><span class="print-label">1. จำนวนสมาชิกที่อาศัยในครัวเรือน ทั้งหมด</span><span class="print-val short" id="p-house-members"></span><span>คน</span></div>
+  <div class="print-row"><span class="print-label">2. สภาพบ้านและสิ่งแวดล้อมรอบบ้าน:</span><span class="print-val" id="p-house-cond"></span></div>
+  <div class="print-row"><span class="print-label">3. สภาพภายในบ้านและบรรยากาศ:</span><span class="print-val" id="p-house-atmos"></span></div>
+  <div class="print-row"><span class="print-label">4. ความเอาใจใส่ในการเรียนของนักเรียนขณะอยู่บ้าน:</span><span class="print-val" id="p-care"></span></div>
+  <div class="print-row"><span class="print-label">5. ความสัมพันธ์กับสมาชิกในครอบครัว:</span><span class="print-val" id="p-rel"></span></div>
+  <div class="print-row"><span class="print-label">6. งานอดิเรกในเวลาว่าง:</span><span class="print-val" id="p-hobby"></span></div>
+  <div class="print-row"><span class="print-label">7. ความสามารถพิเศษ:</span><span class="print-val" id="p-talent"></span></div>
+  <div class="print-row"><span class="print-label">8. ข้อเสนอแนะของผู้ปกครอง:</span><span class="print-val" id="p-parent-suggest"></span></div>
+
+  <div class="page-break"></div>
+
+  <div class="print-section-title" style="margin-top:0;">ข้อมูลด้านเศรษฐกิจ (หน้า 2)</div>
+  <div class="print-row"><span class="print-label">1. บิดาประกอบอาชีพ</span><span class="print-val" id="p-f-job"></span><span class="print-label">ตำแหน่ง</span><span class="print-val" id="p-f-pos"></span><span class="print-label">รายได้/เดือน</span><span class="print-val short" id="p-f-inc"></span><span>บาท</span></div>
+  <div class="print-row"><span class="print-label">2. มารดาประกอบอาชีพ</span><span class="print-val" id="p-m-job"></span><span class="print-label">ตำแหน่ง</span><span class="print-val" id="p-m-pos"></span><span class="print-label">รายได้/เดือน</span><span class="print-val short" id="p-m-inc"></span><span>บาท</span></div>
+  <div class="print-row"><span class="print-label">3. ผู้ดูแลรับผิดชอบค่าใช้จ่ายในการศึกษา</span><span class="print-val" id="p-sp-name"></span><span class="print-label">เกี่ยวข้องเป็น</span><span class="print-val short" id="p-sp-rel"></span></div>
+  <div class="print-row"><span class="print-label">อาชีพ</span><span class="print-val" id="p-sp-job"></span><span class="print-label">ตำแหน่ง</span><span class="print-val" id="p-sp-pos"></span><span class="print-label">รายได้/เดือน</span><span class="print-val short" id="p-sp-inc"></span><span>บาท</span></div>
+  <div class="print-row"><span class="print-label">4. ความช่วยเหลือที่ต้องการจากทางโรงเรียน:</span><span class="print-val" id="p-help"></span></div>
+  <div class="print-row"><span class="print-label">5. วิธีการเดินทางมาโรงเรียน:</span><span class="print-val" id="p-trans"></span><span class="print-label">ค่าใช้จ่าย/เดือน</span><span class="print-val short" id="p-trans-cost"></span><span>บาท</span></div>
+  <div class="print-row"><span class="print-label">6. ระยะเวลาเดินทาง</span><span class="print-val short" id="p-trans-time"></span><span>นาที</span><span class="print-label">ระยะห่างจากโรงเรียน</span><span class="print-val short" id="p-trans-dist"></span><span>กม.</span></div>
+  <div class="print-row"><span class="print-label">7. เงินมาโรงเรียนวันละ</span><span class="print-val short" id="p-money-day"></span><span>บาท</span><span class="print-label">เงินที่ได้รับ:</span><span class="print-val short" id="p-money-en"></span></div>
+  <div class="print-row"><span class="print-label">8. รับประทานอาหารเช้าหรือไม่:</span><span class="print-val short" id="p-bf"></span><span class="print-label">อาหารกลางวันโดย:</span><span class="print-val short" id="p-lunch"></span></div>
+  <div class="print-section-title">ข้อมูลความเป็นอยู่ทางบ้าน</div>
+  <div class="print-row"><span class="print-label">1. สถานภาพบิดา-มารดา:</span><span class="print-val" id="p-parent-status"></span></div>
+  <div class="print-row"><span class="print-label">2. ลักษณะบ้านพักปัจจุบัน:</span><span class="print-val" id="p-house-type"></span></div>
+  <div class="print-row"><span class="print-label">3. สภาพการอยู่ในบ้าน:</span><span class="print-val" id="p-space"></span></div>
+  <div class="print-row"><span class="print-label">4. ห้องส่วนตัวในบ้านพัก:</span><span class="print-val" id="p-private-rm"></span></div>
+  <div class="print-row"><span class="print-label">5. สภาพแวดล้อมรอบบ้าน:</span><span class="print-val" id="p-safe"></span></div>
+  <div class="print-row"><span class="print-label">6. พิกัดตำแหน่งดาวเทียม Lat:</span><span class="print-val short" id="p-lat"></span><span class="print-label">Lng:</span><span class="print-val short" id="p-lng"></span></div>
+
+  <div class="print-sig-row">
+    <div class="print-sig-box">
+      <div>ลงชื่อ..........................................................(ผู้ปกครอง)</div>
+      <img id="print-sig-img-guardian" class="print-sig-img" src="" alt=" ">
+      <div>( <span id="p-sig-name-guardian">....................................................</span> )</div>
+    </div>
+    <div class="print-sig-box">
+      <div>ลงชื่อ..........................................................(ครูที่ปรึกษา)</div>
+      <img id="print-sig-img-teacher" class="print-sig-img" src="" alt=" ">
+      <div>( <span id="p-sig-name-teacher">....................................................</span> )</div>
     </div>
   </div>
 </div>
